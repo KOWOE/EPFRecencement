@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-primary: #0056D2;
+  --color-primary-foreground: #ffffff;
+  
+  --color-sidebar: #003366;
+  --color-sidebar-foreground: #ffffff;
+  
+  --color-background: #F8FAFC;
+  --color-foreground: #0F172A;
+
+  --color-card: #ffffff;
+  --color-card-foreground: #0F172A;
+
+  --color-muted: #F1F5F9;
+  --color-muted-foreground: #64748B;
+
+  --color-border: #E2E8F0;
+  --color-input: #E2E8F0;
+  --color-ring: #0056D2;
+
+  --radius-lg: 0.75rem;
+  --radius-md: calc(0.75rem - 2px);
+  --radius-sm: calc(0.75rem - 4px);
+}
+
+:root {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}
+
+/* Custom classes for the dashboard inspiration */
+.sidebar-active {
+  @apply bg-primary text-white;
+}
+
+.card-stat {
+  @apply bg-white p-6 rounded-xl shadow-sm border border-slate-100;
+}

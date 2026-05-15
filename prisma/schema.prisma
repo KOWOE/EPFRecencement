@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Member {
+  id                String    @id @default(cuid())
+  nom               String
+  prenom            String
+  telephone         String
+  email             String?
+  profession        String?
+  assemblee         String
+  sous_region       String?
+  region            String
+  nom_groupe        String?   // Nom de la chorale / fanfare / groupe
+  partition         String?   // Ex: Soprano, Alto, etc.
+  instrument        String?
+  group_type        GroupType
+
+  // Champs spécifiques & techniques
+  lecture_solfege   Boolean   @default(false)
+  lecture_notes     Boolean   @default(false)
+  
+  // Spécifique Chorale
+  chef_choeur       String?
+  harmonisation     Boolean   @default(false)
+  interet_national  Boolean   @default(false)
+  pourquoi_interet  String?
+  
+  // Spécifique Groupe Musical
+  categorie_chantre String?   // Lead / Coeur
+
+  // Attentes
+  attentes_bureau   String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([group_type])
+  @@index([region])
+}
+
+enum GroupType {
+  CHORALE
+  FANFARE
+  GROUPE_MUSICAL
+}
+
+model Region {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SousRegion {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Groupe {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
