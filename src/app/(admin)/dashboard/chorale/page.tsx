@@ -15,7 +15,7 @@ export default function ChoralePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        <MemberTable />
+        <MemberTable defaultGroup="CHORALE" />
       </div>
     </div>
   )

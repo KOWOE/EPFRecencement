@@ -3,15 +3,21 @@
 import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Filter, Search, ChevronDown, Calendar, MoreHorizontal, Edit, Trash2, Loader2, X } from "lucide-react"
+import { Plus, Filter, Search, ChevronDown, Calendar, MoreHorizontal, Edit, Trash2, Loader2, X, Users, Music, Wind, Church, Phone, Mail, MapPin } from "lucide-react"
 import { CustomSelect } from "@/components/ui/custom-select"
-import { getMembers, deleteMember } from "@/lib/actions/member"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
+import { getMembers, deleteMember, updateMember } from "@/lib/actions/member"
 import { getRegions } from "@/lib/actions/parametres"
 
-export function MemberTable() {
+interface MemberTableProps {
+  showStats?: boolean
+  defaultGroup?: string
+}
+
+export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTableProps) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedGroup, setSelectedGroup] = useState("")
+  const [selectedGroup, setSelectedGroup] = useState(defaultGroup)
   const [selectedRegion, setSelectedRegion] = useState("")
   const [selectedYear, setSelectedYear] = useState("")
   const [selectedMonth, setSelectedMonth] = useState("")
@@ -19,6 +25,8 @@ export function MemberTable() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [editingMember, setEditingMember] = useState<any | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [memberToDelete, setMemberToDelete] = useState<any | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   const [members, setMembers] = useState<any[]>([])
   const [regions, setRegions] = useState<{value: string, label: string}[]>([])
@@ -41,15 +49,18 @@ export function MemberTable() {
     setIsLoading(false)
   }
 
-  const handleDelete = async (member: any) => {
-    if (!confirm(`Voulez-vous vraiment supprimer ${member.nom} ${member.prenom} ?`)) return
-    const res = await deleteMember(member.id)
+  const handleDelete = async () => {
+    if (!memberToDelete) return
+    setIsDeleting(true)
+    const res = await deleteMember(memberToDelete.id)
     if (res.success) {
-      setMembers(prev => prev.filter(m => m.id !== member.id))
+      setMembers(prev => prev.filter(m => m.id !== memberToDelete.id))
       setOpenMenuId(null)
+      setMemberToDelete(null)
     } else {
       alert(res.error)
     }
+    setIsDeleting(false)
   }
 
   const filteredMembers = members.filter(member => {
@@ -70,8 +81,122 @@ export function MemberTable() {
     return matchesSearch && matchesGroup && matchesRegion && matchesYear && matchesMonth
   })
 
+  const stats = {
+    total: members.length,
+    chorale: members.filter(m => m.group_type === "CHORALE").length,
+    fanfare: members.filter(m => m.group_type === "FANFARE").length,
+    groupeMusical: members.filter(m => m.group_type === "GROUPE_MUSICAL").length,
+  }
+
   return (
     <div className="space-y-6">
+      {/* Overview Stats */}
+      {showStats && (
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* Card Total */}
+            <div 
+              onClick={() => setSelectedGroup("")}
+              className={cn(
+                "p-6 bg-white rounded-[1.25rem] border cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative overflow-hidden group",
+                selectedGroup === "" ? "border-blue-500 ring-1 ring-blue-500 shadow-md" : "border-slate-100 shadow-sm"
+              )}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent opacity-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Membres</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">{stats.total}</h3>
+                  </div>
+                </div>
+                <div className={cn(
+                  "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-3",
+                  selectedGroup === "" ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-blue-50 text-blue-600"
+                )}>
+                  <Users className="w-7 h-7" />
+                </div>
+              </div>
+            </div>
+
+            {/* Card Choristes */}
+            <div 
+              onClick={() => setSelectedGroup("CHORALE")}
+              className={cn(
+                "p-6 bg-white rounded-[1.25rem] border cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative overflow-hidden group",
+                selectedGroup === "CHORALE" ? "border-blue-500 ring-1 ring-blue-500 shadow-md" : "border-slate-100 shadow-sm"
+              )}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent opacity-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Choristes</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">{stats.chorale}</h3>
+                  </div>
+                </div>
+                <div className={cn(
+                  "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-3",
+                  selectedGroup === "CHORALE" ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-blue-50 text-blue-600"
+                )}>
+                  <Music className="w-7 h-7" />
+                </div>
+              </div>
+            </div>
+
+            {/* Card Fanfaristes */}
+            <div 
+              onClick={() => setSelectedGroup("FANFARE")}
+              className={cn(
+                "p-6 bg-white rounded-[1.25rem] border cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative overflow-hidden group",
+                selectedGroup === "FANFARE" ? "border-blue-500 ring-1 ring-blue-500 shadow-md" : "border-slate-100 shadow-sm"
+              )}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent opacity-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fanfaristes</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">{stats.fanfare}</h3>
+                  </div>
+                </div>
+                <div className={cn(
+                  "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-3",
+                  selectedGroup === "FANFARE" ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-blue-50 text-blue-600"
+                )}>
+                  <Wind className="w-7 h-7" />
+                </div>
+              </div>
+            </div>
+
+            {/* Card Groupe Musical */}
+            <div 
+              onClick={() => setSelectedGroup("GROUPE_MUSICAL")}
+              className={cn(
+                "p-6 bg-white rounded-[1.25rem] border cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative overflow-hidden group",
+                selectedGroup === "GROUPE_MUSICAL" ? "border-blue-500 ring-1 ring-blue-500 shadow-md" : "border-slate-100 shadow-sm"
+              )}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent opacity-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Groupe Musical</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">{stats.groupeMusical}</h3>
+                  </div>
+                </div>
+                <div className={cn(
+                  "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-3",
+                  selectedGroup === "GROUPE_MUSICAL" ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-blue-50 text-blue-600"
+                )}>
+                  <Church className="w-7 h-7" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Global Date Filters */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm animate-in fade-in slide-in-from-top-2">
         <div className="flex items-center gap-2 text-slate-700">
@@ -137,20 +262,22 @@ export function MemberTable() {
 
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-2 flex-1 sm:flex-none">
-              <div className="w-[160px]">
-                <CustomSelect
-                  value={selectedGroup}
-                  onChange={setSelectedGroup}
-                  placeholder="Tous les groupes"
-                  colorTheme="slate"
-                  options={[
-                    { value: "", label: "Tous les groupes" },
-                    { value: "CHORALE", label: "Chorale" },
-                    { value: "FANFARE", label: "Fanfare" },
-                    { value: "GROUPE_MUSICAL", label: "Groupe Musical" }
-                  ]}
-                />
-              </div>
+              {showStats && (
+                <div className="w-[160px]">
+                  <CustomSelect
+                    value={selectedGroup}
+                    onChange={setSelectedGroup}
+                    placeholder="Tous les groupes"
+                    colorTheme="slate"
+                    options={[
+                      { value: "", label: "Tous les groupes" },
+                      { value: "CHORALE", label: "Chorale" },
+                      { value: "FANFARE", label: "Fanfare" },
+                      { value: "GROUPE_MUSICAL", label: "Groupe Musical" }
+                    ]}
+                  />
+                </div>
+              )}
               <div className="w-[160px]">
                 <CustomSelect
                   value={selectedRegion}
@@ -198,9 +325,10 @@ export function MemberTable() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50/50 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
-                <th className="px-6 py-4 rounded-tl-lg">Nom & Email</th>
+                <th className="px-6 py-4 rounded-tl-lg">Membre</th>
+                <th className="px-6 py-4">Téléphone</th>
+                <th className="px-6 py-4">Email</th>
                 <th className="px-6 py-4">Groupe</th>
-                <th className="px-6 py-4">Rôle</th>
                 <th className="px-6 py-4">Région</th>
                 <th className="px-6 py-4">Sous-région</th>
                 <th className="px-6 py-4 rounded-tr-lg text-right">Actions</th>
@@ -209,23 +337,31 @@ export function MemberTable() {
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto" />
                     <p className="text-sm text-slate-500 mt-2">Chargement des membres...</p>
                   </td>
                 </tr>
               ) : filteredMembers.map((member) => (
-                <tr key={member.id} className="hover:bg-slate-50/80 transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5 group">
+                <tr key={member.id} className={cn(
+                  "hover:bg-slate-50/80 transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5 group",
+                  openMenuId === member.id ? "relative z-50" : "relative z-0"
+                )}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-sm group-hover:scale-105 group-hover:bg-blue-100 transition-all">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-sm shrink-0 group-hover:scale-105 group-hover:bg-blue-100 transition-all">
                         {member.nom.charAt(0)}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-900">{member.nom} {member.prenom}</p>
-                        <p className="text-xs text-slate-500">{member.email}</p>
+                        <p className="text-sm font-bold text-slate-900 truncate max-w-[120px]" title={`${member.nom} ${member.prenom}`}>{member.nom} {member.prenom}</p>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium text-slate-700 whitespace-nowrap">
+                    {member.telephone || "-"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-500 max-w-[150px] truncate" title={member.email}>
+                    {member.email || "-"}
                   </td>
                   <td className="px-6 py-4">
                     <span className={cn(
@@ -237,7 +373,6 @@ export function MemberTable() {
                       {member.group_type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-700">{member.role}</td>
                   <td className="px-6 py-4 text-sm text-slate-600 flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
                     {member.region}
@@ -256,22 +391,25 @@ export function MemberTable() {
                       {openMenuId === member.id && (
                         <>
                           <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)}></div>
-                          <div className="absolute right-6 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
-                            <div className="p-1">
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="p-1.5 space-y-1">
                               <button 
                                 onClick={() => {
                                   setEditingMember(member)
                                   setOpenMenuId(null)
                                 }}
-                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-all"
                               >
-                                <Edit className="w-4 h-4" /> Modifier
+                                <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Edit className="w-4 h-4" /></div> Modifier
                               </button>
                               <button 
-                                onClick={() => handleDelete(member)}
-                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-colors"
+                                onClick={() => {
+                                  setMemberToDelete(member)
+                                  setOpenMenuId(null)
+                                }}
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-rose-600 rounded-xl transition-all"
                               >
-                                <Trash2 className="w-4 h-4" /> Supprimer
+                                <div className="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><Trash2 className="w-4 h-4" /></div> Supprimer
                               </button>
                             </div>
                           </div>
@@ -283,7 +421,7 @@ export function MemberTable() {
               ))}
               {filteredMembers.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                     Aucun membre trouvé avec ces critères.
                   </td>
                 </tr>
@@ -299,15 +437,26 @@ export function MemberTable() {
               <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto" />
             </div>
           ) : filteredMembers.map((member) => (
-            <div key={member.id} className="p-4 space-y-3 hover:bg-slate-50 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-sm">
+            <div key={member.id} className={cn(
+              "p-5 space-y-4 bg-white rounded-[1.25rem] border border-slate-100 hover:border-blue-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group",
+              openMenuId === member.id ? "relative z-50 ring-1 ring-blue-500 shadow-md" : "relative z-0"
+            )}>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-slate-50 to-transparent opacity-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none" />
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 flex items-center justify-center text-blue-600 font-black text-xl border border-blue-100/50 shadow-inner shrink-0 group-hover:scale-105 transition-transform">
                     {member.nom.charAt(0)}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900">{member.nom} {member.prenom}</p>
-                    <p className="text-xs text-slate-500">{member.email}</p>
+                    <p className="text-base font-bold text-slate-900 leading-tight">{member.nom} {member.prenom}</p>
+                    <span className={cn(
+                      "inline-flex mt-2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md border",
+                      member.group_type === "CHORALE" ? "bg-blue-50 text-blue-700 border-blue-100/50" :
+                        member.group_type === "FANFARE" ? "bg-emerald-50 text-emerald-700 border-emerald-100/50" :
+                          "bg-indigo-50 text-indigo-700 border-indigo-100/50"
+                    )}>
+                      {member.group_type}
+                    </span>
                   </div>
                 </div>
 
@@ -315,7 +464,7 @@ export function MemberTable() {
                 <div className="inline-block text-left relative">
                   <button 
                     onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
-                    className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors"
+                    className="p-2.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
                   >
                     <MoreHorizontal className="w-5 h-5" />
                   </button>
@@ -323,27 +472,25 @@ export function MemberTable() {
                   {openMenuId === member.id && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)}></div>
-                      <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
-                        <div className="p-1">
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-1.5 space-y-1">
                           <button 
                             onClick={() => {
-                              alert(`Modification du membre : ${member.name}`)
+                              setEditingMember(member)
                               setOpenMenuId(null)
                             }}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 rounded-xl transition-all"
                           >
-                            <Edit className="w-4 h-4" /> Modifier
+                            <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><Edit className="w-4 h-4" /></div> Modifier
                           </button>
                           <button 
                             onClick={() => {
-                              if(confirm(`Voulez-vous vraiment supprimer ${member.name} ?`)) {
-                                alert(`Membre supprimé.`)
-                              }
+                              setMemberToDelete(member)
                               setOpenMenuId(null)
                             }}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-colors"
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-rose-600 rounded-xl transition-all"
                           >
-                            <Trash2 className="w-4 h-4" /> Supprimer
+                            <div className="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><Trash2 className="w-4 h-4" /></div> Supprimer
                           </button>
                         </div>
                       </div>
@@ -351,34 +498,22 @@ export function MemberTable() {
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-y-3 gap-x-2 pt-3 border-t border-slate-50">
+              <div className="relative grid grid-cols-2 gap-y-4 gap-x-3 pt-4 border-t border-slate-50 mt-4">
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-bold mb-1">Groupe</p>
-                  <span className={cn(
-                    "px-2 py-0.5 text-[10px] font-semibold rounded-md",
-                    member.group_type === "CHORALE" ? "bg-blue-50 text-blue-700" :
-                      member.group_type === "FANFARE" ? "bg-emerald-50 text-emerald-700" :
-                        "bg-indigo-50 text-indigo-700"
-                  )}>
-                    {member.group_type}
-                  </span>
+                  <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1 flex items-center gap-1"><Phone className="w-3 h-3"/> Téléphone</p>
+                  <p className="text-sm text-slate-700 font-semibold">{member.telephone || "-"}</p>
+                </div>
+                <div className="overflow-hidden">
+                  <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1 flex items-center gap-1"><Mail className="w-3 h-3"/> Email</p>
+                  <p className="text-sm text-slate-700 font-semibold truncate" title={member.email}>{member.email || "-"}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-bold mb-1">Rôle</p>
-                  <p className="text-xs text-slate-700 font-medium">{member.role}</p>
+                  <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1 flex items-center gap-1"><MapPin className="w-3 h-3"/> Région</p>
+                  <p className="text-sm text-slate-700 font-semibold truncate" title={member.region}>{member.region}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-bold mb-1">Région</p>
-                  <p className="text-xs text-slate-700 font-medium flex items-center gap-1">
-                    <span className="w-1 h-1 rounded-full bg-slate-300" />
-                    {member.region}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-bold mb-1">Sous-région</p>
-                  <p className="text-xs text-slate-700 font-medium flex items-center gap-1">
-                    {member.sous_region}
-                  </p>
+                  <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Sous-région</p>
+                  <p className="text-sm text-slate-700 font-semibold truncate" title={member.sous_region}>{member.sous_region}</p>
                 </div>
               </div>
             </div>
@@ -408,8 +543,9 @@ export function MemberTable() {
             <form action={async (formData) => {
               setIsUpdating(true)
               const res = await updateMember(editingMember.id, formData)
-              if (res.success) {
-                setMembers(prev => prev.map(m => m.id === res.data.id ? res.data : m))
+              if (res.success && res.data) {
+                const updatedMember = res.data
+                setMembers(prev => prev.map(m => m.id === updatedMember.id ? updatedMember : m))
                 setEditingMember(null)
               } else {
                 alert(res.error)
@@ -465,6 +601,16 @@ export function MemberTable() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal 
+        isOpen={!!memberToDelete}
+        title="Supprimer le membre"
+        description={`Êtes-vous sûr de vouloir supprimer ${memberToDelete?.nom} ${memberToDelete?.prenom} ? Cette action est irréversible.`}
+        onConfirm={handleDelete}
+        onCancel={() => setMemberToDelete(null)}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

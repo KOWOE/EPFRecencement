@@ -5,12 +5,11 @@ import { usePathname } from "next/navigation"
 import { 
   LayoutDashboard, 
   Users, 
-  FileUp, 
-  FileDown, 
   Settings,
   Church,
   Music,
   Wind,
+  FileSpreadsheet,
   X
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -21,8 +20,7 @@ const sidebarItems = [
   { name: "Chorale", href: "/dashboard/chorale", icon: Music },
   { name: "Fanfare", href: "/dashboard/fanfare", icon: Wind },
   { name: "Groupe Musical", href: "/dashboard/groupe-musical", icon: Church },
-  { name: "Imports", href: "/dashboard/imports", icon: FileUp },
-  { name: "Exports", href: "/dashboard/exports", icon: FileDown },
+  { name: "Imports & Exports", href: "/dashboard/imports-exports", icon: FileSpreadsheet },
 ]
 
 interface SidebarProps {

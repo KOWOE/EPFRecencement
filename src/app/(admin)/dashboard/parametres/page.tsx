@@ -3,6 +3,7 @@
 import { Settings, User, Bell, Shield, Key, Database, Plus, Trash2, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { getRegions, addRegion, deleteRegion, getSousRegions, addSousRegion, deleteSousRegion, getGroupes, addGroupe, deleteGroupe } from "@/lib/actions/parametres"
 
 export default function ParametresPage() {
@@ -22,6 +23,14 @@ export default function ParametresPage() {
   const [isAddingSousRegion, setIsAddingSousRegion] = useState(false)
   const [isAddingGroupe, setIsAddingGroupe] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, type: 'region'|'sous-region'|'groupe'|null, id: string | null, name: string | null}>({
+    isOpen: false,
+    type: null,
+    id: null,
+    name: null
+  })
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -63,10 +72,19 @@ export default function ParametresPage() {
   }
 
   const handleDeleteRegion = async (id: string) => {
-    if(!confirm("Supprimer cette région ?")) return
-    const res = await deleteRegion(id)
-    if (res.success) {
-      setRegions(regions.filter(r => r.id !== id))
+    setIsDeleting(true)
+    try {
+      const res = await deleteRegion(id)
+      if (res.success) {
+        setRegions(regions.filter(r => r.id !== id))
+        setDeleteModal({isOpen: false, type: null, id: null, name: null})
+      } else {
+        alert(res.error || "Erreur lors de la suppression")
+      }
+    } catch (err) {
+      alert("Une erreur est survenue lors de la suppression")
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -92,10 +110,19 @@ export default function ParametresPage() {
   }
 
   const handleDeleteSousRegion = async (id: string) => {
-    if(!confirm("Supprimer cette sous-région ?")) return
-    const res = await deleteSousRegion(id)
-    if (res.success) {
-      setSousRegions(sousRegions.filter(s => s.id !== id))
+    setIsDeleting(true)
+    try {
+      const res = await deleteSousRegion(id)
+      if (res.success) {
+        setSousRegions(sousRegions.filter(s => s.id !== id))
+        setDeleteModal({isOpen: false, type: null, id: null, name: null})
+      } else {
+        alert(res.error || "Erreur lors de la suppression")
+      }
+    } catch (err) {
+      alert("Une erreur est survenue lors de la suppression")
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -121,11 +148,27 @@ export default function ParametresPage() {
   }
 
   const handleDeleteGroupe = async (id: string) => {
-    if(!confirm("Supprimer ce groupe ?")) return
-    const res = await deleteGroupe(id)
-    if (res.success) {
-      setGroupes(groupes.filter(g => g.id !== id))
+    setIsDeleting(true)
+    try {
+      const res = await deleteGroupe(id)
+      if (res.success) {
+        setGroupes(groupes.filter(g => g.id !== id))
+        setDeleteModal({isOpen: false, type: null, id: null, name: null})
+      } else {
+        alert(res.error || "Erreur lors de la suppression")
+      }
+    } catch (err) {
+      alert("Une erreur est survenue lors de la suppression")
+    } finally {
+      setIsDeleting(false)
     }
+  }
+
+  const confirmDelete = () => {
+    if (!deleteModal.id || !deleteModal.type) return
+    if (deleteModal.type === 'region') handleDeleteRegion(deleteModal.id)
+    if (deleteModal.type === 'sous-region') handleDeleteSousRegion(deleteModal.id)
+    if (deleteModal.type === 'groupe') handleDeleteGroupe(deleteModal.id)
   }
 
   return (
@@ -294,8 +337,13 @@ export default function ParametresPage() {
                         {regions.map((region) => (
                           <div key={region.id} className="flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-lg">
                             <span className="text-sm font-medium text-slate-700">{region.name}</span>
-                            <button onClick={() => handleDeleteRegion(region.id)} className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-colors">
-                              <Trash2 className="w-4 h-4" />
+                            <button 
+                              type="button"
+                              onClick={() => setDeleteModal({ isOpen: true, type: 'region', id: region.id, name: region.name })} 
+                              className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-95 group"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="w-4 h-4 pointer-events-none group-hover:scale-110 transition-transform" />
                             </button>
                           </div>
                         ))}
@@ -330,8 +378,13 @@ export default function ParametresPage() {
                         {sousRegions.map((sr) => (
                           <div key={sr.id} className="flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-lg">
                             <span className="text-sm font-medium text-slate-700">{sr.name}</span>
-                            <button onClick={() => handleDeleteSousRegion(sr.id)} className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-colors">
-                              <Trash2 className="w-4 h-4" />
+                            <button 
+                              type="button"
+                              onClick={() => setDeleteModal({ isOpen: true, type: 'sous-region', id: sr.id, name: sr.name })} 
+                              className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-95 group"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="w-4 h-4 pointer-events-none group-hover:scale-110 transition-transform" />
                             </button>
                           </div>
                         ))}
@@ -366,8 +419,13 @@ export default function ParametresPage() {
                         {groupes.map((groupe) => (
                           <div key={groupe.id} className="flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-lg">
                             <span className="text-sm font-medium text-slate-700">{groupe.name}</span>
-                            <button onClick={() => handleDeleteGroupe(groupe.id)} className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-colors">
-                              <Trash2 className="w-4 h-4" />
+                            <button 
+                              type="button"
+                              onClick={() => setDeleteModal({ isOpen: true, type: 'groupe', id: groupe.id, name: groupe.name })} 
+                              className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-95 group"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="w-4 h-4 pointer-events-none group-hover:scale-110 transition-transform" />
                             </button>
                           </div>
                         ))}
@@ -382,6 +440,15 @@ export default function ParametresPage() {
 
         </div>
       </div>
+      
+      <ConfirmModal 
+        isOpen={deleteModal.isOpen}
+        title={`Supprimer ${deleteModal.type === 'region' ? 'la région' : deleteModal.type === 'sous-region' ? 'la sous-région' : 'le groupe'}`}
+        description={`Êtes-vous sûr de vouloir supprimer "${deleteModal.name}" ? Cette action est irréversible.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteModal({isOpen: false, type: null, id: null, name: null})}
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

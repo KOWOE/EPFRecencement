@@ -15,7 +15,7 @@ export default function FanfarePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        <MemberTable />
+        <MemberTable defaultGroup="FANFARE" />
       </div>
     </div>
   )

@@ -15,7 +15,7 @@ export default function MembresPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        <MemberTable />
+        <MemberTable showStats={true} />
       </div>
     </div>
   )
