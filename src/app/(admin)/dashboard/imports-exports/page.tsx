@@ -1,9 +1,11 @@
 "use client"
 
-import { FileUp, FileDown, UploadCloud, DownloadCloud, AlertCircle, FileSpreadsheet, Loader2 } from "lucide-react"
+import { FileUp, FileDown, UploadCloud, DownloadCloud, AlertCircle, FileSpreadsheet, Loader2, CheckCircle2, X } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { CustomSelect } from "@/components/ui/custom-select"
+import * as XLSX from "xlsx"
+import { importMembers, exportMembers } from "@/lib/actions/member"
 
 export default function ImportsExportsPage() {
   const [isImporting, setIsImporting] = useState(false)
@@ -11,16 +13,79 @@ export default function ImportsExportsPage() {
   const [activeTab, setActiveTab] = useState<"import" | "export">("export")
   const [selectedExportGroup, setSelectedExportGroup] = useState("")
   const [selectedExportFormat, setSelectedExportFormat] = useState("xlsx")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [importSuccess, setImportSuccess] = useState<string | null>(null)
 
   const handleImport = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!selectedFile) return
     setIsImporting(true)
-    setTimeout(() => setIsImporting(false), 2000)
+    setImportSuccess(null)
+
+    const reader = new FileReader()
+    reader.onload = async (evt) => {
+      try {
+        const dataBuffer = evt.target?.result
+        if (!dataBuffer) {
+          throw new Error("Impossible de lire le fichier.")
+        }
+        
+        const workbook = XLSX.read(dataBuffer, { type: "array" })
+        const sheetName = workbook.SheetNames[0]
+        const worksheet = workbook.Sheets[sheetName]
+        const data = XLSX.utils.sheet_to_json(worksheet)
+        
+        const result = await importMembers(data)
+        
+        if (result.success) {
+          setImportSuccess(`L'importation de ${result.count} membre(s) depuis le fichier "${selectedFile.name}" a été effectuée avec succès !`)
+          setSelectedFile(null)
+        } else {
+          alert(result.error || "Erreur lors de l'importation.")
+        }
+      } catch (error) {
+        console.error("Erreur lors de la lecture du fichier :", error)
+        alert("Erreur lors de la lecture du fichier. Assurez-vous qu'il s'agit d'un fichier Excel ou CSV valide.")
+      } finally {
+        setIsImporting(false)
+      }
+    }
+    reader.readAsArrayBuffer(selectedFile)
   }
 
-  const handleExport = () => {
+  const handleExport = async () => {
     setIsExporting(true)
-    setTimeout(() => setIsExporting(false), 2000)
+    try {
+      const res = await exportMembers(selectedExportGroup || undefined, selectedExportFormat)
+      
+      if (!res.success || !res.data) {
+        alert(res.error || "Erreur lors de la génération de l'exportation.")
+        return
+      }
+
+      // Dynamic download via Blob
+      const byteCharacters = atob(res.data)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      const blob = new Blob([byteArray], { type: res.mimeType })
+
+      const link = document.createElement("a")
+      link.href = URL.createObjectURL(blob)
+      link.download = res.filename || `export.${selectedExportFormat}`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+    } catch (error) {
+      console.error("Erreur lors de l'exportation :", error)
+      alert("Une erreur est survenue lors de l'exportation des données.")
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   return (
@@ -139,24 +204,93 @@ export default function ImportsExportsPage() {
                 <p>Assurez-vous que votre fichier respecte le format d'importation. Les colonnes obligatoires sont: nom&prenom, numero, email, groupe, region, sous-region.</p>
               </div>
 
+              {importSuccess && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex gap-3 text-emerald-800 text-sm items-center animate-in fade-in slide-in-from-top-2 duration-300">
+                  <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+                  <div className="flex-1">
+                    <p className="font-semibold">{importSuccess}</p>
+                  </div>
+                  <button onClick={() => setImportSuccess(null)} className="text-emerald-600 hover:text-emerald-800 transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
               <form onSubmit={handleImport} className="space-y-6">
-                <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center hover:bg-slate-50 hover:border-emerald-500 transition-all cursor-pointer group">
-                  <input type="file" accept=".xlsx,.csv" className="hidden" id="file-upload" />
-                  <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
-                      <FileUp className="w-6 h-6" />
+                <div 
+                  onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
+                  onDragLeave={() => setIsDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    setIsDragOver(false)
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      const file = e.dataTransfer.files[0]
+                      if (file.name.endsWith('.xlsx') || file.name.endsWith('.csv')) {
+                        setSelectedFile(file)
+                        setImportSuccess(null)
+                      }
+                    }
+                  }}
+                  className={cn(
+                    "border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer group",
+                    isDragOver 
+                      ? "border-emerald-500 bg-emerald-50/20" 
+                      : selectedFile 
+                        ? "border-emerald-300 bg-slate-50/50" 
+                        : "border-slate-200 hover:bg-slate-50 hover:border-emerald-500"
+                  )}
+                >
+                  <input 
+                    type="file" 
+                    accept=".xlsx,.csv" 
+                    className="hidden" 
+                    id="file-upload" 
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setSelectedFile(e.target.files[0])
+                        setImportSuccess(null)
+                      }
+                    }}
+                  />
+                  
+                  {selectedFile ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-inner">
+                        <FileSpreadsheet className="w-7 h-7" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-bold text-slate-800">{selectedFile.name}</p>
+                        <p className="text-xs text-slate-500">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setSelectedFile(null)
+                        }}
+                        className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 rounded-xl text-xs font-bold transition-all"
+                      >
+                        <X className="w-3.5 h-3.5" /> Retirer le fichier
+                      </button>
                     </div>
-                    <div>
-                      <p className="font-bold text-slate-700 group-hover:text-emerald-600 transition-colors">Cliquez pour sélectionner un fichier</p>
-                      <p className="text-xs text-slate-500 mt-1">ou glissez-déposez le ici (Excel ou CSV)</p>
-                    </div>
-                  </label>
+                  ) : (
+                    <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-emerald-500 transition-colors">
+                        <FileUp className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-700 group-hover:text-emerald-600 transition-colors">Cliquez pour sélectionner un fichier</p>
+                        <p className="text-xs text-slate-500 mt-1">ou glissez-déposez le ici (Excel ou CSV)</p>
+                      </div>
+                    </label>
+                  )}
                 </div>
 
                 <div className="pt-4 border-t border-slate-100">
                   <button 
                     type="submit"
-                    disabled={isImporting}
+                    disabled={isImporting || !selectedFile}
                     className="w-full flex items-center justify-center gap-2 py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all hover:shadow-lg hover:shadow-emerald-600/20 disabled:opacity-50"
                   >
                     {isImporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileUp className="w-5 h-5" />}
