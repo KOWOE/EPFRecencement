@@ -8,6 +8,7 @@ import { CustomSelect } from "@/components/ui/custom-select"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { getMembers, deleteMember, updateMember } from "@/lib/actions/member"
 import { getRegions } from "@/lib/actions/parametres"
+import { useToast } from "@/context/toast-context"
 
 interface MemberTableProps {
   showStats?: boolean
@@ -16,6 +17,7 @@ interface MemberTableProps {
 
 export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTableProps) {
   const router = useRouter()
+  const { showToast, showAlertDialog } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedGroup, setSelectedGroup] = useState(defaultGroup)
   const [selectedRegion, setSelectedRegion] = useState("")
@@ -57,8 +59,9 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
       setMembers(prev => prev.filter(m => m.id !== memberToDelete.id))
       setOpenMenuId(null)
       setMemberToDelete(null)
+      showToast("Membre supprimé avec succès !", "success")
     } else {
-      alert(res.error)
+      showAlertDialog("Erreur", res.error || "Impossible de supprimer ce membre", "error")
     }
     setIsDeleting(false)
   }
@@ -547,8 +550,9 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
                 const updatedMember = res.data
                 setMembers(prev => prev.map(m => m.id === updatedMember.id ? updatedMember : m))
                 setEditingMember(null)
+                showToast("Membre modifié avec succès !", "success")
               } else {
-                alert(res.error)
+                showAlertDialog("Erreur de modification", res.error || "Impossible de modifier ce membre", "error")
               }
               setIsUpdating(false)
             }} className="p-6 space-y-4">

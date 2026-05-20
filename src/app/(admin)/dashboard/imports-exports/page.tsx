@@ -7,8 +7,10 @@ import { CustomSelect } from "@/components/ui/custom-select"
 import * as XLSX from "xlsx"
 import { importMembers, exportMembers, getUniqueAssemblies } from "@/lib/actions/member"
 import { getRegions, getSousRegions } from "@/lib/actions/parametres"
+import { useToast } from "@/context/toast-context"
 
 export default function ImportsExportsPage() {
+  const { showToast, showAlertDialog } = useToast()
   const [isImporting, setIsImporting] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [activeTab, setActiveTab] = useState<"import" | "export">("export")
@@ -84,13 +86,14 @@ export default function ImportsExportsPage() {
         
         if (result.success) {
           setImportSuccess(`L'importation de ${result.count} membre(s) depuis le fichier "${selectedFile.name}" a été effectuée avec succès !`)
+          showToast(`L'importation de ${result.count} membre(s) a réussi !`, "success")
           setSelectedFile(null)
         } else {
-          alert(result.error || "Erreur lors de l'importation.")
+          showAlertDialog("Erreur d'importation", result.error || "Erreur lors de l'importation.", "error")
         }
       } catch (error) {
         console.error("Erreur lors de la lecture du fichier :", error)
-        alert("Erreur lors de la lecture du fichier. Assurez-vous qu'il s'agit d'un fichier Excel ou CSV valide.")
+        showAlertDialog("Fichier invalide", "Erreur lors de la lecture du fichier. Assurez-vous qu'il s'agit d'un fichier Excel ou CSV valide.", "error")
       } finally {
         setIsImporting(false)
       }
@@ -112,7 +115,7 @@ export default function ImportsExportsPage() {
       )
       
       if (!res.success || !res.data) {
-        alert(res.error || "Erreur lors de la génération de l'exportation.")
+        showAlertDialog("Erreur d'exportation", res.error || "Erreur lors de la génération de l'exportation.", "error")
         return
       }
 
@@ -182,7 +185,7 @@ export default function ImportsExportsPage() {
       }
     } catch (error) {
       console.error("Erreur lors de l'exportation :", error)
-      alert("Une erreur est survenue lors de l'exportation des données.")
+      showAlertDialog("Erreur de téléchargement", "Une erreur est survenue lors de l'exportation des données.", "error")
     } finally {
       setIsExporting(false)
     }

@@ -5,8 +5,10 @@ import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { getRegions, addRegion, deleteRegion, getSousRegions, addSousRegion, deleteSousRegion, getGroupes, addGroupe, deleteGroupe } from "@/lib/actions/parametres"
+import { useToast } from "@/context/toast-context"
 
 export default function ParametresPage() {
+  const { showToast, showAlertDialog } = useToast()
   const [activeTab, setActiveTab] = useState("profil")
 
   // Security Toggles
@@ -154,13 +156,14 @@ export default function ParametresPage() {
       if (res.success && res.data) {
         setRegions([...regions, res.data])
         setNewRegion("")
+        showToast("Région ajoutée avec succès !", "success")
       } else {
         setError(res.error || "Erreur lors de l'ajout de la région")
-        alert(res.error || "Erreur lors de l'ajout de la région")
+        showAlertDialog("Erreur", res.error || "Erreur lors de l'ajout de la région", "error")
       }
     } catch (err) {
       setError("Erreur de connexion au serveur")
-      alert("Erreur de connexion au serveur")
+      showAlertDialog("Erreur réseau", "Erreur de connexion au serveur", "error")
     } finally {
       setIsAddingRegion(false)
     }
@@ -173,11 +176,12 @@ export default function ParametresPage() {
       if (res.success) {
         setRegions(regions.filter(r => r.id !== id))
         setDeleteModal({isOpen: false, type: null, id: null, name: null})
+        showToast("Région supprimée !", "success")
       } else {
-        alert(res.error || "Erreur lors de la suppression")
+        showAlertDialog("Erreur", res.error || "Erreur lors de la suppression", "error")
       }
     } catch (err) {
-      alert("Une erreur est survenue lors de la suppression")
+      showAlertDialog("Erreur", "Une erreur est survenue lors de la suppression", "error")
     } finally {
       setIsDeleting(false)
     }
@@ -192,13 +196,14 @@ export default function ParametresPage() {
       if (res.success && res.data) {
         setSousRegions([...sousRegions, res.data])
         setNewSousRegion("")
+        showToast("Sous-région ajoutée avec succès !", "success")
       } else {
         setError(res.error || "Erreur lors de l'ajout de la sous-région")
-        alert(res.error || "Erreur lors de l'ajout de la sous-région")
+        showAlertDialog("Erreur", res.error || "Erreur lors de l'ajout de la sous-région", "error")
       }
     } catch (err) {
       setError("Erreur de connexion au serveur")
-      alert("Erreur de connexion au serveur")
+      showAlertDialog("Erreur réseau", "Erreur de connexion au serveur", "error")
     } finally {
       setIsAddingSousRegion(false)
     }
@@ -211,11 +216,12 @@ export default function ParametresPage() {
       if (res.success) {
         setSousRegions(sousRegions.filter(s => s.id !== id))
         setDeleteModal({isOpen: false, type: null, id: null, name: null})
+        showToast("Sous-région supprimée !", "success")
       } else {
-        alert(res.error || "Erreur lors de la suppression")
+        showAlertDialog("Erreur", res.error || "Erreur lors de la suppression", "error")
       }
     } catch (err) {
-      alert("Une erreur est survenue lors de la suppression")
+      showAlertDialog("Erreur", "Une erreur est survenue lors de la suppression", "error")
     } finally {
       setIsDeleting(false)
     }
@@ -230,13 +236,14 @@ export default function ParametresPage() {
       if (res.success && res.data) {
         setGroupes([...groupes, res.data])
         setNewGroupe("")
+        showToast("Groupe ajouté avec succès !", "success")
       } else {
         setError(res.error || "Erreur lors de l'ajout du groupe")
-        alert(res.error || "Erreur lors de l'ajout du groupe")
+        showAlertDialog("Erreur", res.error || "Erreur lors de l'ajout du groupe", "error")
       }
     } catch (err) {
       setError("Erreur de connexion au serveur")
-      alert("Erreur de connexion au serveur")
+      showAlertDialog("Erreur réseau", "Erreur de connexion au serveur", "error")
     } finally {
       setIsAddingGroupe(false)
     }
@@ -249,11 +256,12 @@ export default function ParametresPage() {
       if (res.success) {
         setGroupes(groupes.filter(g => g.id !== id))
         setDeleteModal({isOpen: false, type: null, id: null, name: null})
+        showToast("Groupe supprimé !", "success")
       } else {
-        alert(res.error || "Erreur lors de la suppression")
+        showAlertDialog("Erreur", res.error || "Erreur lors de la suppression", "error")
       }
     } catch (err) {
-      alert("Une erreur est survenue lors de la suppression")
+      showAlertDialog("Erreur", "Une erreur est survenue lors de la suppression", "error")
     } finally {
       setIsDeleting(false)
     }
