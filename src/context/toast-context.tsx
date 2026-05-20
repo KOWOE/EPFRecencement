@@ -10,6 +10,7 @@ interface Toast {
   id: string
   message: string
   type: ToastType
+  isExiting?: boolean
 }
 
 interface DialogConfig {
@@ -22,6 +23,55 @@ interface DialogConfig {
 interface ToastContextType {
   showToast: (message: string, type?: ToastType) => void
   showAlertDialog: (title: string, message: string, type?: ToastType) => void
+}
+
+const playNotificationSound = (type: "show" | "hide") => {
+  if (typeof window === "undefined") return
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+    if (!AudioContextClass) return
+    const ctx = new AudioContextClass()
+    
+    if (type === "show") {
+      // High-quality dual chime (D5 -> A5 ascending)
+      const now = ctx.currentTime
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      
+      osc.type = "sine"
+      osc.frequency.setValueAtTime(587.33, now) // D5
+      osc.frequency.setValueAtTime(880.00, now + 0.08) // A5
+      
+      gain.gain.setValueAtTime(0.08, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4)
+      
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      
+      osc.start(now)
+      osc.stop(now + 0.45)
+    } else {
+      // Gentle swoosh pop (A4 -> A3 descending)
+      const now = ctx.currentTime
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      
+      osc.type = "sine"
+      osc.frequency.setValueAtTime(440.00, now) // A4
+      osc.frequency.exponentialRampToValueAtTime(220.00, now + 0.12) // A3
+      
+      gain.gain.setValueAtTime(0.04, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12)
+      
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      
+      osc.start(now)
+      osc.stop(now + 0.15)
+    }
+  } catch (e) {
+    console.error("Failed to play notification sound", e)
+  }
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined)
@@ -38,6 +88,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const showToast = (message: string, type: ToastType = "info") => {
     const id = Math.random().toString(36).substring(2, 9)
     setToasts((prev) => [...prev, { id, message, type }])
+    playNotificationSound("show")
   }
 
   const showAlertDialog = (title: string, message: string, type: ToastType = "info") => {
@@ -50,7 +101,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }
 
   const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
+    setToasts((prev) => 
+      prev.map((t) => t.id === id ? { ...t, isExiting: true } : t)
+    )
+    playNotificationSound("hide")
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, 300)
   }
 
   return (
@@ -128,8 +185,8 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
 
   return (
     <div className={cn(
-      "flex items-center gap-3 p-4 bg-white rounded-xl shadow-lg border border-slate-100 pointer-events-auto animate-in slide-in-from-right-4 fade-in duration-300",
-      "w-full"
+      "flex items-center gap-3 p-4 bg-white rounded-xl shadow-lg border border-slate-100 pointer-events-auto w-full overflow-hidden transition-all duration-300",
+      toast.isExiting ? "toast-animate-leave" : "toast-animate-enter"
     )}>
       <div className={cn(
         "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border",
