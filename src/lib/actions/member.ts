@@ -4,12 +4,13 @@ import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import * as ExcelJS from "exceljs"
-import { verifySession } from "@/lib/session"
+import { createClient } from "@/lib/supabase/server"
 
 async function verifyAuth() {
-  const session = await verifySession()
-  if (!session) throw new Error("Non autorisé : Session invalide ou expirée")
-  return session
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Non autorisé : Session invalide ou expirée")
+  return user
 }
 
 const memberSchema = z.object({

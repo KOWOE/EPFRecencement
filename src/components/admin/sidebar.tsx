@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { useToast } from "@/context/toast-context"
-import { createClient } from "@/lib/supabase/client"
+import { logoutAdmin } from "@/lib/actions/parametres"
 
 function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -93,9 +93,15 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
   const confirmLogout = async () => {
     setIsLogoutOpen(false)
     if (onClose) onClose()
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    localStorage.removeItem("admin_session")
+    
+    // Appel du Server Action pour détruire le cookie de session
+    await logoutAdmin()
+    
+    // Nettoyage visuel du cache local
+    localStorage.removeItem("admin_nom")
+    localStorage.removeItem("admin_email")
+    localStorage.removeItem("admin_role")
+    
     showToast("Déconnexion réussie !", "success")
     router.push("/connexion")
   }

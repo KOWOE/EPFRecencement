@@ -112,9 +112,6 @@ export default function ConnexionPage() {
     if (!password) {
       tempErrors.password = "Le mot de passe est requis."
       isValid = false
-    } else if (password !== "recensement2026") {
-      tempErrors.password = "Mot de passe incorrect (Indice: recensement2026)."
-      isValid = false
     }
 
     setErrors(tempErrors)

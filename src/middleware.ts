@@ -1,40 +1,54 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { jwtVerify } from 'jose'
-
-const secretKey = process.env.SESSION_SECRET || 'epf-recensement-secret-key-super-secure-2026'
-const encodedKey = new TextEncoder().encode(secretKey)
+import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
-  const sessionCookie = request.cookies.get('admin_session')?.value
-  let isValid = false
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
 
-  if (sessionCookie) {
-    try {
-      await jwtVerify(sessionCookie, encodedKey, { algorithms: ['HS256'] })
-      isValid = true
-    } catch (e) {
-      isValid = false
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
     }
-  }
+  )
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/connexion')
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/connexion') || request.nextUrl.pathname.startsWith('/auth')
   const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard')
 
   // Redirection : si on n'est pas connecté et qu'on essaie d'accéder au dashboard
-  if (!isValid && isDashboardRoute) {
+  if (!user && isDashboardRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/connexion'
     return NextResponse.redirect(url)
   }
 
   // Redirection : si on est déjà connecté et qu'on accède à la page de connexion
-  if (isValid && isAuthRoute) {
+  if (user && isAuthRoute && request.nextUrl.pathname !== '/auth/callback') {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 
-  return NextResponse.next()
+  return supabaseResponse
 }
 
 export const config = {

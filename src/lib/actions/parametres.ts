@@ -2,12 +2,14 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { createSession, deleteSession, verifySession } from "@/lib/session"
+import { createClient } from "@/lib/supabase/server"
+import { supabaseAdmin } from "@/lib/supabase/admin"
 
 async function verifyAuth() {
-  const session = await verifySession()
-  if (!session) throw new Error("Non autorisé : Session invalide ou expirée")
-  return session
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Non autorisé : Session invalide ou expirée")
+  return user
 }
 
 export async function getAdminProfile() {
@@ -24,7 +26,8 @@ export async function getAdminProfile() {
 }
 
 export async function logoutAdmin() {
-  await deleteSession()
+  const supabase = await createClient()
+  await supabase.auth.signOut()
   return { success: true }
 }
 
@@ -224,12 +227,27 @@ export async function addAdmin(nom: string, email: string, role: string, passwor
   
   try {
     await verifyAuth()
+    
+    // Créer le compte dans Supabase Auth en premier
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: email.trim().toLowerCase(),
+      password: password && password.trim() ? password.trim() : "Recensement@2026",
+      email_confirm: true,
+      user_metadata: { role: role.trim(), nom: nom.trim() }
+    })
+
+    if (authError) {
+       console.error("Supabase Auth Error:", authError)
+       return { success: false as const, error: "Impossible de créer le compte sécurisé: " + authError.message }
+    }
+
+    // Créer le compte dans Prisma
     const admin = await prisma.admin.create({
       data: {
         nom: nom.trim(),
         email: email.trim().toLowerCase(),
         role: role.trim(),
-        ...(password && password.trim() ? { password: password.trim() } : {})
+        ...(password && password.trim() ? { password: password.trim() } : { password: "Recensement@2026" })
       }
     })
     revalidatePath("/dashboard/parametres")
@@ -265,6 +283,17 @@ export async function deleteAdmin(id: string) {
       }
     }
 
+    // Supprimer de Supabase Auth
+    if (adminToDelete) {
+      const { data: usersData } = await supabaseAdmin.auth.admin.listUsers()
+      if (usersData && usersData.users) {
+        const authUser = usersData.users.find(u => u.email === adminToDelete.email)
+        if (authUser) {
+           await supabaseAdmin.auth.admin.deleteUser(authUser.id)
+        }
+      }
+    }
+
     await prisma.admin.delete({
       where: { id }
     })
@@ -281,19 +310,25 @@ export async function loginAdmin(email: string, mdp?: string) {
     return { success: false as const, error: "L'adresse email est requise" }
   }
   try {
+    const supabase = await createClient()
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password: mdp || ""
+    })
+
+    if (authError || !authData.user) {
+      return { success: false as const, error: "Email ou mot de passe incorrect." }
+    }
+
+    // Récupérer le rôle et nom depuis Prisma pour la cohérence UI
     const admin = await prisma.admin.findUnique({
       where: { email: email.trim().toLowerCase() }
     })
+    
     if (!admin) {
-      return { success: false as const, error: "Adresse email non reconnue comme administrateur" }
+      // Cas rare où l'utilisateur est dans Auth mais pas dans Prisma
+      return { success: false as const, error: "Ce compte n'a pas accès à l'administration." }
     }
-    
-    if (mdp && admin.password !== mdp) {
-      return { success: false as const, error: "Mot de passe incorrect" }
-    }
-    
-    // Créer la session sécurisée (Cookie HttpOnly)
-    await createSession(admin.email, admin.nom, admin.role)
 
     return {
       success: true as const,
