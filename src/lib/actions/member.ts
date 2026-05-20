@@ -161,9 +161,47 @@ function getNormalizedValue(obj: any, targetKeys: string[]): any {
   return undefined
 }
 
-export async function importMembers(members: any[]) {
+export async function importMembers(formData: FormData) {
   try {
     await verifyAuth()
+    const file = formData.get("file") as File
+    if (!file) {
+      return { success: false, error: "Fichier manquant" }
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const workbook = new ExcelJS.Workbook()
+    
+    if (file.name.toLowerCase().endsWith('.csv')) {
+      const { Readable } = require('stream')
+      const stream = Readable.from(buffer)
+      await workbook.csv.read(stream)
+    } else {
+      await workbook.xlsx.load(buffer as any)
+    }
+    
+    const worksheet = workbook.worksheets[0]
+    if (!worksheet) {
+       return { success: false, error: "Le fichier Excel/CSV est vide." }
+    }
+    
+    const members: any[] = []
+    let headers: string[] = []
+    
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) {
+        row.eachCell((cell, colNumber) => {
+          headers[colNumber] = cell.text ? cell.text.trim() : `Col${colNumber}`
+        })
+      } else {
+        const rowData: any = {}
+        row.eachCell((cell, colNumber) => {
+          rowData[headers[colNumber]] = cell.text || cell.value
+        })
+        members.push(rowData)
+      }
+    })
+
     let importedCount = 0
     
     for (const m of members) {

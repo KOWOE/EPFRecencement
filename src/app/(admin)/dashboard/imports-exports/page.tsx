@@ -4,7 +4,6 @@ import { FileUp, FileDown, UploadCloud, DownloadCloud, AlertCircle, FileSpreadsh
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { CustomSelect } from "@/components/ui/custom-select"
-import * as XLSX from "xlsx"
 import { importMembers, exportMembers, getUniqueAssemblies } from "@/lib/actions/member"
 import { getRegions, getSousRegions } from "@/lib/actions/parametres"
 import { useToast } from "@/context/toast-context"
@@ -63,42 +62,31 @@ export default function ImportsExportsPage() {
     loadFiltersData()
   }, [])
 
-  const handleImport = (e: React.FormEvent) => {
+  const handleImport = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedFile) return
     setIsImporting(true)
     setImportSuccess(null)
 
-    const reader = new FileReader()
-    reader.onload = async (evt) => {
-      try {
-        const dataBuffer = evt.target?.result
-        if (!dataBuffer) {
-          throw new Error("Impossible de lire le fichier.")
-        }
-        
-        const workbook = XLSX.read(dataBuffer, { type: "array" })
-        const sheetName = workbook.SheetNames[0]
-        const worksheet = workbook.Sheets[sheetName]
-        const data = XLSX.utils.sheet_to_json(worksheet)
-        
-        const result = await importMembers(data)
-        
-        if (result.success) {
-          setImportSuccess(`L'importation de ${result.count} membre(s) depuis le fichier "${selectedFile.name}" a été effectuée avec succès !`)
-          showToast(`L'importation de ${result.count} membre(s) a réussi !`, "success")
-          setSelectedFile(null)
-        } else {
-          showAlertDialog("Erreur d'importation", result.error || "Erreur lors de l'importation.", "error")
-        }
-      } catch (error) {
-        console.error("Erreur lors de la lecture du fichier :", error)
-        showAlertDialog("Fichier invalide", "Erreur lors de la lecture du fichier. Assurez-vous qu'il s'agit d'un fichier Excel ou CSV valide.", "error")
-      } finally {
-        setIsImporting(false)
+    try {
+      const formData = new FormData()
+      formData.append("file", selectedFile)
+      
+      const result = await importMembers(formData)
+      
+      if (result.success) {
+        setImportSuccess(`L'importation de ${result.count} membre(s) depuis le fichier "${selectedFile.name}" a été effectuée avec succès !`)
+        showToast(`L'importation de ${result.count} membre(s) a réussi !`, "success")
+        setSelectedFile(null)
+      } else {
+        showAlertDialog("Erreur d'importation", result.error || "Erreur lors de l'importation.", "error")
       }
+    } catch (error) {
+      console.error("Erreur lors de l'envoi du fichier :", error)
+      showAlertDialog("Fichier invalide", "Erreur lors de l'envoi du fichier au serveur.", "error")
+    } finally {
+      setIsImporting(false)
     }
-    reader.readAsArrayBuffer(selectedFile)
   }
 
   const handleExport = async () => {
