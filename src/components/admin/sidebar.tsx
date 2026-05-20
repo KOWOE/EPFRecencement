@@ -52,9 +52,11 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
     )}>
       <div className="p-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Church className="w-6 h-6 text-blue-400" />
-            EPF System
+          <h1 className="text-xl font-bold flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-white flex items-center justify-center shrink-0">
+              <img src="/logo.jpg" alt="Logo EPF" className="w-full h-full object-cover" />
+            </div>
+            <span>EPF System</span>
           </h1>
           <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Recensement National</p>
         </div>

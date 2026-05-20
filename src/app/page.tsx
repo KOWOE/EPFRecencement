@@ -146,8 +146,8 @@ export default function RootPage() {
       <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100 transition-all duration-300">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2 group cursor-pointer">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/20 group-hover:scale-105 transition-transform duration-300">
-              <Church className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 bg-white flex items-center justify-center shadow-lg shadow-blue-600/10 group-hover:scale-105 transition-transform duration-300">
+              <img src="/logo.jpg" alt="Logo EPF" className="w-full h-full object-cover" />
             </div>
             <span className="text-xl font-bold text-slate-900 tracking-tight">
               EPF <span className="text-blue-600">Recensement</span>
@@ -436,8 +436,8 @@ export default function RootPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
             <div className="space-y-4 md:col-span-2">
               <div className="flex items-center gap-2 text-white">
-                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-                  <Church className="w-4.5 h-4.5" />
+                <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-800 bg-white flex items-center justify-center shrink-0">
+                  <img src="/logo.jpg" alt="Logo EPF" className="w-full h-full object-cover" />
                 </div>
                 <span className="font-bold text-lg">EPF Recensement</span>
               </div>

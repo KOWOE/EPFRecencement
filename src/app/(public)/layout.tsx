@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { Church } from "lucide-react"
 
 export default function PublicLayout({
   children,
@@ -11,8 +10,8 @@ export default function PublicLayout({
       <header className="bg-white border-b border-slate-200 py-3 lg:py-4 shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-blue-600 rounded-lg lg:rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
-              <Church className="w-5 h-5 lg:w-6 lg:h-6" />
+            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center bg-white shadow-md shadow-blue-900/5">
+              <img src="/logo.jpg" alt="Logo EPF" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-base lg:text-xl font-bold text-slate-900 leading-none">EPF Recensement</h1>
