@@ -6,7 +6,6 @@ import {
   LayoutDashboard, 
   Users, 
   Settings,
-  Church,
   Mic,
   FileSpreadsheet,
   X,
@@ -16,6 +15,7 @@ import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { useToast } from "@/context/toast-context"
+import { createClient } from "@/lib/supabase/client"
 
 function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -44,12 +44,38 @@ function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
   )
 }
 
+function MicCableIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      {/* Microphone body/handle */}
+      <line x1="9" y1="15" x2="15" y2="9" />
+      {/* Tapered handle sides */}
+      <path d="M10 16.5L6.5 20c-.8.8-2 .8-2.8 0s-.8-2 0-2.8l3.5-3.5" />
+      {/* Microphone Head (Capsule) */}
+      <path d="M13 11l3-3a3 3 0 0 1 4.2 4.2l-3 3" />
+      {/* Grille separation line */}
+      <path d="M14.5 9.5l2.5 2.5" />
+      {/* The wavy cord */}
+      <path d="M5.5 19.5c-1 1.5-2 2-3 1s-.5-2.5.8-3.7c1.8-1.8 3.5-1.8 5.3-.5 1.8 1.3 3.5 1.3 5.3 0c1.2-1 2.2-.8 3 .5" />
+    </svg>
+  )
+}
+
 const sidebarItems = [
   { name: "Tableau de Bord", href: "/dashboard", icon: LayoutDashboard },
   { name: "Tous les Membres", href: "/dashboard/membres", icon: Users },
   { name: "Chorale", href: "/dashboard/chorale", icon: Mic },
   { name: "Fanfare", href: "/dashboard/fanfare", icon: TrumpetIcon },
-  { name: "Groupe Musical", href: "/dashboard/groupe-musical", icon: Church },
+  { name: "Groupe Musical", href: "/dashboard/groupe-musical", icon: MicCableIcon },
   { name: "Imports & Exports", href: "/dashboard/imports-exports", icon: FileSpreadsheet },
 ]
 
@@ -64,11 +90,14 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
   const { showToast } = useToast()
   const [isLogoutOpen, setIsLogoutOpen] = useState(false)
 
-  const confirmLogout = () => {
+  const confirmLogout = async () => {
     setIsLogoutOpen(false)
     if (onClose) onClose()
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    localStorage.removeItem("admin_session")
     showToast("Déconnexion réussie !", "success")
-    router.push("/")
+    router.push("/connexion")
   }
 
   return (

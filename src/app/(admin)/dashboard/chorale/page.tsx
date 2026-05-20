@@ -1,12 +1,12 @@
 import { MemberTable } from "@/components/admin/member-table"
-import { Mic } from "lucide-react"
+import { Music } from "lucide-react"
 
 export default function ChoralePage() {
   return (
     <div className="space-y-8 animate-fade-in-up">
       <div className="flex items-center gap-4 animate-fade-in-up delay-75">
         <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-          <Mic className="w-6 h-6 text-blue-600" />
+          <Music className="w-6 h-6 text-blue-600" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Chorale Nationale</h1>

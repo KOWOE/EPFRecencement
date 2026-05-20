@@ -1,9 +1,10 @@
 "use client"
 
 import { Sidebar } from "@/components/admin/sidebar"
-import { Menu, X, Bell, User, Settings, Check } from "lucide-react"
+import { Menu, X, Bell, User, Settings, Check, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { getAdminProfile } from "@/lib/actions/parametres"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -24,6 +25,8 @@ export default function AdminLayout({
   const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isNotifOpen, setIsNotifOpen] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
 
   // Profile State synced with localStorage
   const [profile, setProfile] = useState({
@@ -60,13 +63,27 @@ export default function AdminLayout({
     }
   ])
 
-  // Sync profile from localStorage on mount and register custom event listener
+  // Secure profile loading via Server Action (which checks Supabase Auth)
   useEffect(() => {
-    const loadProfile = () => {
-      const storedNom = localStorage.getItem("admin_nom") || "Admin EPF"
-      const storedEmail = localStorage.getItem("admin_email") || "admin@epf-recensement.ci"
-      const storedRole = localStorage.getItem("admin_role") || "Super Admin"
-      setProfile({ nom: storedNom, email: storedEmail, role: storedRole })
+    const loadProfile = async () => {
+      try {
+        const result = await getAdminProfile()
+        if (result.success && result.data) {
+          setProfile({
+            nom: result.data.nom,
+            email: result.data.email,
+            role: result.data.role
+          })
+          setIsAuthenticated(true)
+        } else {
+          // If the server action rejects, middleware should have caught it, but just in case:
+          router.push("/connexion")
+        }
+      } catch (e) {
+        router.push("/connexion")
+      } finally {
+        setCheckingAuth(false)
+      }
     }
 
     loadProfile()
@@ -74,7 +91,7 @@ export default function AdminLayout({
     return () => {
       window.removeEventListener("profile-updated", loadProfile)
     }
-  }, [])
+  }, [router])
 
   const unreadCount = notifications.filter(n => !n.read).length
   const hasUnread = unreadCount > 0
@@ -98,6 +115,17 @@ export default function AdminLayout({
       .join("")
       .substring(0, 2)
       .toUpperCase()
+  }
+
+  if (checkingAuth || !isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#F8FAFC]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+          <p className="text-slate-500 font-semibold text-sm animate-pulse">Vérification de la session admin...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

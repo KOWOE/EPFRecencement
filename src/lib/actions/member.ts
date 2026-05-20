@@ -3,7 +3,14 @@
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import * as XLSX from "xlsx"
+import * as ExcelJS from "exceljs"
+import { verifySession } from "@/lib/session"
+
+async function verifyAuth() {
+  const session = await verifySession()
+  if (!session) throw new Error("Non autorisé : Session invalide ou expirée")
+  return session
+}
 
 const memberSchema = z.object({
   nom: z.string().min(2, "Le nom est requis"),
@@ -70,6 +77,7 @@ export async function createMember(formData: FormData) {
 
 export async function getMembers() {
   try {
+    await verifyAuth()
     const members = await prisma.member.findMany({
       orderBy: { createdAt: "desc" }
     })
@@ -89,6 +97,7 @@ export async function getMembers() {
 
 export async function deleteMember(id: string) {
   try {
+    await verifyAuth()
     await prisma.member.delete({
       where: { id }
     })
@@ -103,6 +112,7 @@ export async function deleteMember(id: string) {
 
 export async function updateMember(id: string, formData: FormData) {
   try {
+    await verifyAuth()
     const rawData = Object.fromEntries(formData.entries())
     
     const processedData = {
@@ -152,6 +162,7 @@ function getNormalizedValue(obj: any, targetKeys: string[]): any {
 
 export async function importMembers(members: any[]) {
   try {
+    await verifyAuth()
     let importedCount = 0
     
     for (const m of members) {
@@ -236,6 +247,7 @@ export async function importMembers(members: any[]) {
 
 export async function getUniqueAssemblies() {
   try {
+    await verifyAuth()
     const members = await prisma.member.findMany({
       select: {
         assemblee: true
@@ -267,6 +279,7 @@ export async function exportMembers(
   format: string = "xlsx"
 ) {
   try {
+    await verifyAuth()
     const where: any = {}
     if (filters.groupType) {
       where.group_type = filters.groupType
@@ -310,18 +323,28 @@ export async function exportMembers(
       }
     }
 
-    // Generate sheet and workbook
-    const worksheet = XLSX.utils.json_to_sheet(formattedData)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Membres")
+    // Generate sheet and workbook using exceljs
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet("Membres")
+    
+    if (formattedData.length > 0) {
+      worksheet.columns = Object.keys(formattedData[0]).map(key => ({ header: key, key: key }))
+      formattedData.forEach(row => worksheet.addRow(row))
+    }
+
+    let buffer: ArrayBuffer
+    if (format === "csv") {
+      buffer = await workbook.csv.writeBuffer() as ArrayBuffer
+    } else {
+      buffer = await workbook.xlsx.writeBuffer() as ArrayBuffer
+    }
 
     // Write to a base64 string
-    const bookType = format === "csv" ? "csv" : "xlsx"
-    const buffer = XLSX.write(workbook, { type: "base64", bookType })
+    const base64String = Buffer.from(buffer).toString("base64")
 
     return { 
       success: true, 
-      data: buffer, 
+      data: base64String, 
       filename: `membres_export_${new Date().toISOString().slice(0, 10)}.${format}`,
       mimeType: format === "csv" ? "text/csv" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     }
@@ -333,6 +356,7 @@ export async function exportMembers(
 
 export async function getDashboardStats() {
   try {
+    await verifyAuth()
     const [total, chorale, fanfare, musical] = await Promise.all([
       prisma.member.count(),
       prisma.member.count({ where: { group_type: "CHORALE" } }),

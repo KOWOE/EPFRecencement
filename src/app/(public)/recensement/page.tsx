@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Mic, Church, ArrowRight } from "lucide-react"
+import React from "react"
+import { Music, ArrowRight } from "lucide-react"
 
 function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -13,17 +14,47 @@ function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M18 8c1.5 0 3 .5 3 2.5v3c0 2-1.5 2.5-3 2.5" />
-      <path d="M21 9v6" />
-      <path d="M3 13h15" />
-      <path d="M3 11h11c1 0 2 .5 2 1.5s-1 1.5-2 1.5H8" />
-      <path d="M9 11V7" />
-      <circle cx="9" cy="6" r="1" />
-      <path d="M12 11V7" />
-      <circle cx="12" cy="6" r="1" />
-      <path d="M15 11V7" />
-      <circle cx="15" cy="6" r="1" />
-      <path d="M2 10.5v3" />
+      {/* Tilted main leadpipe */}
+      <line x1="4" y1="20" x2="16" y2="8" />
+      {/* Mouthpiece */}
+      <path d="M3 21l1.5-1.5M2 22a1 1 0 0 0 1.4-1.4" />
+      {/* Tubing loop at the bottom */}
+      <path d="M7 17c-1.5-1.5-1.5-3 0-4.5s3-1.5 4.5 0" />
+      {/* Perpendicular parallel valves */}
+      <line x1="10" y1="12" x2="8" y2="10" />
+      <circle cx="7.5" cy="9.5" r="0.75" fill="currentColor" />
+      
+      <line x1="11.5" y1="10.5" x2="9.5" y2="8.5" />
+      <circle cx="9" cy="8" r="0.75" fill="currentColor" />
+      
+      <line x1="13" y1="9" x2="11" y2="7" />
+      <circle cx="10.5" cy="6.5" r="0.75" fill="currentColor" />
+      
+      {/* Bell shape at top right */}
+      <path d="M14 10c2.5-3.5 5.5-6.5 8-7" />
+      <path d="M16 12c3.5-2.5 6.5-5.5 7-8" />
+      <path d="M22 3c1 1-6 7-7 8" />
+    </svg>
+  )
+}
+
+function MicCableIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <line x1="9" y1="15" x2="15" y2="9" />
+      <path d="M10 16.5L6.5 20c-.8.8-2 .8-2.8 0s-.8-2 0-2.8l3.5-3.5" />
+      <path d="M13 11l3-3a3 3 0 0 1 4.2 4.2l-3 3" />
+      <path d="M14.5 9.5l2.5 2.5" />
+      <path d="M5.5 19.5c-1 1.5-2 2-3 1s-.5-2.5.8-3.7c1.8-1.8 3.5-1.8 5.3-.5 1.8 1.3 3.5 1.3 5.3 0c1.2-1 2.2-.8 3 .5" />
     </svg>
   )
 }
@@ -33,7 +64,7 @@ const groups = [
     id: "chorale",
     name: "Chorale",
     description: "Recensement pour tous les membres des chorales locales et régionales.",
-    icon: Mic,
+    icon: Music,
     color: "bg-blue-600",
     href: "/recensement/chorale"
   },
@@ -49,7 +80,7 @@ const groups = [
     id: "groupe-musical",
     name: "Groupe Musical / Chantres",
     description: "Pour les musiciens d'accompagnement et les chantres de l'église.",
-    icon: Church,
+    icon: MicCableIcon,
     color: "bg-indigo-600",
     href: "/recensement/groupe-musical"
   }

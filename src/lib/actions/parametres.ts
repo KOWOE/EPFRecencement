@@ -2,6 +2,31 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { createSession, deleteSession, verifySession } from "@/lib/session"
+
+async function verifyAuth() {
+  const session = await verifySession()
+  if (!session) throw new Error("Non autorisé : Session invalide ou expirée")
+  return session
+}
+
+export async function getAdminProfile() {
+  try {
+    const user = await verifyAuth()
+    const admin = await prisma.admin.findUnique({
+      where: { email: user.email?.toLowerCase() }
+    })
+    if (!admin) return { success: false, error: "Administrateur non trouvé" }
+    return { success: true, data: { nom: admin.nom, email: admin.email, role: admin.role } }
+  } catch (error) {
+    return { success: false, error: "Erreur serveur de connexion." }
+  }
+}
+
+export async function logoutAdmin() {
+  await deleteSession()
+  return { success: true }
+}
 
 // -----------------------------------------------------------------------------
 // RÉGIONS
@@ -9,6 +34,7 @@ import { revalidatePath } from "next/cache"
 
 export async function getRegions() {
   try {
+    await verifyAuth()
     const regions = await prisma.region.findMany({
       orderBy: { name: "asc" },
       select: { id: true, name: true }
@@ -23,6 +49,7 @@ export async function getRegions() {
 export async function addRegion(name: string) {
   if (!name.trim()) return { success: false as const, error: "Le nom de la région est requis" }
   try {
+    await verifyAuth()
     const region = await prisma.region.create({
       data: { name: name.trim() },
       select: { id: true, name: true }
@@ -38,6 +65,7 @@ export async function addRegion(name: string) {
 
 export async function deleteRegion(id: string) {
   try {
+    await verifyAuth()
     await prisma.region.delete({
       where: { id }
     })
@@ -55,6 +83,7 @@ export async function deleteRegion(id: string) {
 
 export async function getSousRegions() {
   try {
+    await verifyAuth()
     const sousRegions = await prisma.sousRegion.findMany({
       orderBy: { name: "asc" },
       select: { id: true, name: true }
@@ -69,6 +98,7 @@ export async function getSousRegions() {
 export async function addSousRegion(name: string) {
   if (!name.trim()) return { success: false as const, error: "Le nom de la sous-région est requis" }
   try {
+    await verifyAuth()
     const sousRegion = await prisma.sousRegion.create({
       data: { name: name.trim() },
       select: { id: true, name: true }
@@ -84,6 +114,7 @@ export async function addSousRegion(name: string) {
 
 export async function deleteSousRegion(id: string) {
   try {
+    await verifyAuth()
     await prisma.sousRegion.delete({
       where: { id }
     })
@@ -101,6 +132,7 @@ export async function deleteSousRegion(id: string) {
 
 export async function getGroupes() {
   try {
+    await verifyAuth()
     const groupes = await prisma.groupe.findMany({
       orderBy: { name: "asc" },
       select: { id: true, name: true }
@@ -115,6 +147,7 @@ export async function getGroupes() {
 export async function addGroupe(name: string) {
   if (!name.trim()) return { success: false as const, error: "Le nom du groupe est requis" }
   try {
+    await verifyAuth()
     const groupe = await prisma.groupe.create({
       data: { name: name.trim() },
       select: { id: true, name: true }
@@ -130,6 +163,7 @@ export async function addGroupe(name: string) {
 
 export async function deleteGroupe(id: string) {
   try {
+    await verifyAuth()
     await prisma.groupe.delete({
       where: { id }
     })
@@ -147,6 +181,7 @@ export async function deleteGroupe(id: string) {
 
 export async function getAdmins() {
   try {
+    await verifyAuth()
     let admins = await prisma.admin.findMany({
       orderBy: { nom: "asc" }
     })
@@ -160,7 +195,7 @@ export async function getAdmins() {
       
       for (const sa of seedAdmins) {
         await prisma.admin.create({
-          data: sa
+          data: { ...sa, password: "recensement2026" }
         }).catch(() => {})
       }
       
@@ -182,17 +217,19 @@ export async function getAdmins() {
   }
 }
 
-export async function addAdmin(nom: string, email: string, role: string) {
+export async function addAdmin(nom: string, email: string, role: string, password?: string) {
   if (!nom.trim()) return { success: false as const, error: "Le nom est requis" }
   if (!email.trim()) return { success: false as const, error: "L'adresse email est requise" }
   if (!role.trim()) return { success: false as const, error: "Le rôle est requis" }
   
   try {
+    await verifyAuth()
     const admin = await prisma.admin.create({
       data: {
         nom: nom.trim(),
         email: email.trim().toLowerCase(),
-        role: role.trim()
+        role: role.trim(),
+        ...(password && password.trim() ? { password: password.trim() } : {})
       }
     })
     revalidatePath("/dashboard/parametres")
@@ -216,6 +253,7 @@ export async function addAdmin(nom: string, email: string, role: string) {
 
 export async function deleteAdmin(id: string) {
   try {
+    await verifyAuth()
     // Garde-fou : empêcher de supprimer le dernier Super Admin
     const adminToDelete = await prisma.admin.findUnique({ where: { id } })
     if (adminToDelete && adminToDelete.role === "Super Admin") {
@@ -238,3 +276,36 @@ export async function deleteAdmin(id: string) {
   }
 }
 
+export async function loginAdmin(email: string, mdp?: string) {
+  if (!email || !email.trim()) {
+    return { success: false as const, error: "L'adresse email est requise" }
+  }
+  try {
+    const admin = await prisma.admin.findUnique({
+      where: { email: email.trim().toLowerCase() }
+    })
+    if (!admin) {
+      return { success: false as const, error: "Adresse email non reconnue comme administrateur" }
+    }
+    
+    if (mdp && admin.password !== mdp) {
+      return { success: false as const, error: "Mot de passe incorrect" }
+    }
+    
+    // Créer la session sécurisée (Cookie HttpOnly)
+    await createSession(admin.email, admin.nom, admin.role)
+
+    return {
+      success: true as const,
+      data: {
+        id: admin.id,
+        nom: admin.nom,
+        email: admin.email,
+        role: admin.role
+      }
+    }
+  } catch (error: any) {
+    console.error("Error authenticating admin:", error)
+    return { success: false as const, error: "Une erreur est survenue lors de la connexion" }
+  }
+}

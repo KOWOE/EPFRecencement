@@ -70,6 +70,7 @@ model Admin {
   nom       String
   email     String   @unique
   role      String   // "Super Admin" | "Éditeur"
+  password  String   @default("recensement2026")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

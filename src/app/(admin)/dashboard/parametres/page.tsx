@@ -44,6 +44,7 @@ export default function ParametresPage() {
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false)
   const [newAdminNom, setNewAdminNom] = useState("")
   const [newAdminEmail, setNewAdminEmail] = useState("")
+  const [newAdminPassword, setNewAdminPassword] = useState("")
   const [newAdminRole, setNewAdminRole] = useState("Éditeur")
   const [isAddingAdmin, setIsAddingAdmin] = useState(false)
 
@@ -317,11 +318,12 @@ export default function ParametresPage() {
     }
     setIsAddingAdmin(true)
     try {
-      const res = await addAdmin(newAdminNom, newAdminEmail, newAdminRole)
+      const res = await addAdmin(newAdminNom, newAdminEmail, newAdminRole, newAdminPassword)
       if (res.success && res.data) {
         setAdmins([...admins, res.data])
         setNewAdminNom("")
         setNewAdminEmail("")
+        setNewAdminPassword("")
         setNewAdminRole("Éditeur")
         setIsAdminModalOpen(false)
         showToast("Administrateur ajouté avec succès !", "success")
@@ -960,6 +962,17 @@ export default function ParametresPage() {
                   value={newAdminEmail}
                   onChange={(e) => setNewAdminEmail(e.target.value)}
                   placeholder="ex: jean.kouassi@epf.ci"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">Mot de Passe <span className="text-slate-400 font-normal">(Optionnel)</span></label>
+                <input 
+                  type="password" 
+                  value={newAdminPassword}
+                  onChange={(e) => setNewAdminPassword(e.target.value)}
+                  placeholder="ex: secret2026 (défaut: recensement2026)"
                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
                 />
               </div>
