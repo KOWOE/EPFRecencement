@@ -64,3 +64,13 @@ enum GroupType {
   FANFARE
   GROUPE_MUSICAL
 }
+
+model Admin {
+  id        String   @id @default(cuid())
+  nom       String
+  email     String   @unique
+  role      String   // "Super Admin" | "Éditeur"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

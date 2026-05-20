@@ -1,18 +1,104 @@
 "use client"
 
 import { Sidebar } from "@/components/admin/sidebar"
-import { Menu, X, Bell, User, Settings } from "lucide-react"
-import { useState } from "react"
+import { Menu, X, Bell, User, Settings, Check } from "lucide-react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+
+interface NotificationItem {
+  id: string
+  title: string
+  description: string
+  time: string
+  link: string
+  read: boolean
+}
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isNotifOpen, setIsNotifOpen] = useState(false)
+
+  // Profile State synced with localStorage
+  const [profile, setProfile] = useState({
+    nom: "Admin EPF",
+    email: "admin@epf-recensement.ci",
+    role: "Super Admin"
+  })
+
+  // Dynamic Notifications State
+  const [notifications, setNotifications] = useState<NotificationItem[]>([
+    {
+      id: "1",
+      title: "Nouveau membre ajouté",
+      description: "John Doe s'est inscrit à la Chorale.",
+      time: "Il y a 5 min",
+      link: "/dashboard/membres",
+      read: false
+    },
+    {
+      id: "2",
+      title: "Mise à jour système",
+      description: "L'application a été mise à jour avec succès.",
+      time: "Il y a 2 heures",
+      link: "/dashboard/parametres",
+      read: false
+    },
+    {
+      id: "3",
+      title: "Rapport mensuel généré",
+      description: "Le rapport de Mai est prêt au téléchargement.",
+      time: "Hier à 14:00",
+      link: "/dashboard/imports-exports",
+      read: false
+    }
+  ])
+
+  // Sync profile from localStorage on mount and register custom event listener
+  useEffect(() => {
+    const loadProfile = () => {
+      const storedNom = localStorage.getItem("admin_nom") || "Admin EPF"
+      const storedEmail = localStorage.getItem("admin_email") || "admin@epf-recensement.ci"
+      const storedRole = localStorage.getItem("admin_role") || "Super Admin"
+      setProfile({ nom: storedNom, email: storedEmail, role: storedRole })
+    }
+
+    loadProfile()
+    window.addEventListener("profile-updated", loadProfile)
+    return () => {
+      window.removeEventListener("profile-updated", loadProfile)
+    }
+  }, [])
+
+  const unreadCount = notifications.filter(n => !n.read).length
+  const hasUnread = unreadCount > 0
+
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+  }
+
+  const handleNotificationClick = (notif: NotificationItem) => {
+    // Mark as read
+    setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n))
+    setIsNotifOpen(false)
+    router.push(notif.link)
+  }
+
+  // Get initials for profile avatar
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase()
+  }
 
   return (
     <div className="flex h-screen bg-[#F8FAFC]">
@@ -48,42 +134,77 @@ export default function AdminLayout({
           </div>
           
           <div className="flex items-center gap-2 lg:gap-4">
+            {/* Notifications Dropdown */}
             <div className="relative">
               <button 
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
-                className="p-2 hover:bg-slate-100 rounded-full text-slate-500 relative transition-colors"
+                className={cn(
+                  "p-2 hover:bg-slate-100 rounded-full text-slate-500 relative transition-all active:scale-95",
+                  isNotifOpen && "bg-slate-100 text-slate-800"
+                )}
               >
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+                {hasUnread && (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white animate-pulse"></span>
+                )}
               </button>
 
               {isNotifOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsNotifOpen(false)}></div>
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                       <h3 className="font-bold text-slate-900">Notifications</h3>
-                      <span className="text-xs font-medium px-2 py-1 bg-blue-50 text-blue-600 rounded-full">3 nouvelles</span>
+                      <span className={cn(
+                        "text-xs font-medium px-2.5 py-0.5 rounded-full transition-all duration-300",
+                        hasUnread ? "bg-blue-50 text-blue-600" : "bg-emerald-50 text-emerald-600"
+                      )}>
+                        {hasUnread ? `${unreadCount} nouvelle${unreadCount > 1 ? 's' : ''}` : "À jour"}
+                      </span>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
-                      <div className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer">
-                        <p className="text-sm text-slate-800 font-medium">Nouveau membre ajouté</p>
-                        <p className="text-xs text-slate-500 mt-1">John Doe s'est inscrit à la Chorale.</p>
-                        <p className="text-[10px] text-slate-400 mt-2">Il y a 5 min</p>
-                      </div>
-                      <div className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer">
-                        <p className="text-sm text-slate-800 font-medium">Mise à jour système</p>
-                        <p className="text-xs text-slate-500 mt-1">L'application a été mise à jour avec succès.</p>
-                        <p className="text-[10px] text-slate-400 mt-2">Il y a 2 heures</p>
-                      </div>
-                      <div className="p-4 hover:bg-slate-50 transition-colors cursor-pointer">
-                        <p className="text-sm text-slate-800 font-medium">Rapport mensuel généré</p>
-                        <p className="text-xs text-slate-500 mt-1">Le rapport de Mai est prêt au téléchargement.</p>
-                        <p className="text-[10px] text-slate-400 mt-2">Hier à 14:00</p>
-                      </div>
+                      {notifications.map((notif) => (
+                        <div 
+                          key={notif.id}
+                          onClick={() => handleNotificationClick(notif)}
+                          className={cn(
+                            "p-4 border-b border-slate-50 transition-all duration-300 cursor-pointer flex gap-3 items-start",
+                            notif.read 
+                              ? "bg-white hover:bg-slate-50/50" 
+                              : "bg-blue-50/30 hover:bg-blue-50/60 border-l-2 border-blue-500"
+                          )}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className={cn(
+                                "text-sm font-semibold transition-colors duration-300",
+                                notif.read ? "text-slate-600" : "text-slate-900"
+                              )}>
+                                {notif.title}
+                              </p>
+                              {notif.read && (
+                                <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{notif.description}</p>
+                            <p className="text-[10px] text-slate-400 mt-1.5 font-mono">{notif.time}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="p-3 border-t border-slate-100 bg-slate-50 text-center">
-                      <button className="text-sm text-blue-600 font-medium hover:text-blue-700">Tout marquer comme lu</button>
+                    <div className="p-2.5 border-t border-slate-100 bg-slate-50/80 text-center">
+                      <button 
+                        onClick={handleMarkAllAsRead}
+                        disabled={!hasUnread}
+                        className={cn(
+                          "text-sm font-semibold transition-all duration-300 w-full py-1.5 rounded-lg active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+                          hasUnread 
+                            ? "text-blue-600 hover:text-blue-700 hover:bg-blue-50/50" 
+                            : "text-emerald-600 hover:text-emerald-700 font-bold bg-emerald-50/50"
+                        )}
+                      >
+                        {hasUnread ? "Tout marquer comme lu" : "Toutes les notifications sont lues ✓"}
+                      </button>
                     </div>
                   </div>
                 </>
@@ -92,13 +213,16 @@ export default function AdminLayout({
             
             <div className="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
             
+            {/* User Profile Info */}
             <Link href="/dashboard/parametres" className="flex items-center gap-3 hover:bg-slate-50 p-1.5 rounded-xl transition-colors group">
               <div className="text-right hidden sm:block">
-                <p className="text-xs lg:text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors">Admin EPF</p>
-                <p className="text-[10px] text-slate-500">Super Admin</p>
+                <p className="text-xs lg:text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                  {profile.nom}
+                </p>
+                <p className="text-[10px] text-slate-500">{profile.role}</p>
               </div>
               <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                AD
+                {getInitials(profile.nom)}
               </div>
             </Link>
           </div>

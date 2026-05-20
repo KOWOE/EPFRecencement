@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { 
   LayoutDashboard, 
   Users, 
@@ -10,9 +10,13 @@ import {
   Music,
   Wind,
   FileSpreadsheet,
-  X
+  X,
+  LogOut
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useState } from "react"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
+import { useToast } from "@/context/toast-context"
 
 const sidebarItems = [
   { name: "Tableau de Bord", href: "/dashboard", icon: LayoutDashboard },
@@ -30,6 +34,16 @@ interface SidebarProps {
 
 export function Sidebar({ onClose, isMobile }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { showToast } = useToast()
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false)
+
+  const confirmLogout = () => {
+    setIsLogoutOpen(false)
+    if (onClose) onClose()
+    showToast("Déconnexion réussie !", "success")
+    router.push("/")
+  }
 
   return (
     <div className={cn(
@@ -72,8 +86,8 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
           )
         })}
       </nav>
-
-      <div className="p-4 border-t border-white/10">
+ 
+      <div className="p-4 border-t border-white/10 space-y-1">
         <Link 
           href="/dashboard/parametres"
           onClick={onClose}
@@ -87,7 +101,25 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
           <Settings className={cn("w-5 h-5", pathname === "/dashboard/parametres" ? "text-white" : "text-white/40")} />
           Paramètres
         </Link>
+
+        <button 
+          type="button"
+          onClick={() => setIsLogoutOpen(true)}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-rose-300 hover:text-white hover:bg-rose-500/10 transition-all duration-200 cursor-pointer text-left"
+        >
+          <LogOut className="w-5 h-5 text-rose-300/60" />
+          Déconnexion
+        </button>
       </div>
+
+      <ConfirmModal 
+        isOpen={isLogoutOpen}
+        title="Déconnexion"
+        description="Êtes-vous sûr de vouloir vous déconnecter de l'espace administration ?"
+        onConfirm={confirmLogout}
+        onCancel={() => setIsLogoutOpen(false)}
+        isLoading={false}
+      />
     </div>
   )
 }

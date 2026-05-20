@@ -140,3 +140,101 @@ export async function deleteGroupe(id: string) {
     return { success: false as const, error: `Erreur lors de la suppression du groupe : ${error?.message || String(error)}` }
   }
 }
+
+// -----------------------------------------------------------------------------
+// Administrateurs
+// -----------------------------------------------------------------------------
+
+export async function getAdmins() {
+  try {
+    let admins = await prisma.admin.findMany({
+      orderBy: { nom: "asc" }
+    })
+    
+    if (admins.length === 0) {
+      // Seed default admins
+      const seedAdmins = [
+        { nom: "Admin EPF", email: "admin@epf-recensement.ci", role: "Super Admin" },
+        { nom: "Secrétariat EPF", email: "secretariat@epf-recensement.ci", role: "Éditeur" }
+      ]
+      
+      for (const sa of seedAdmins) {
+        await prisma.admin.create({
+          data: sa
+        }).catch(() => {})
+      }
+      
+      admins = await prisma.admin.findMany({
+        orderBy: { nom: "asc" }
+      })
+    }
+    
+    const serializedAdmins = admins.map(a => ({
+      ...a,
+      createdAt: a.createdAt.toISOString(),
+      updatedAt: a.updatedAt.toISOString()
+    }))
+    
+    return { success: true as const, data: serializedAdmins }
+  } catch (error: any) {
+    console.error("Error fetching admins:", error?.message || error)
+    return { success: false as const, error: `Erreur lors de la récupération des administrateurs : ${error?.message || String(error)}` }
+  }
+}
+
+export async function addAdmin(nom: string, email: string, role: string) {
+  if (!nom.trim()) return { success: false as const, error: "Le nom est requis" }
+  if (!email.trim()) return { success: false as const, error: "L'adresse email est requise" }
+  if (!role.trim()) return { success: false as const, error: "Le rôle est requis" }
+  
+  try {
+    const admin = await prisma.admin.create({
+      data: {
+        nom: nom.trim(),
+        email: email.trim().toLowerCase(),
+        role: role.trim()
+      }
+    })
+    revalidatePath("/dashboard/parametres")
+    return {
+      success: true as const,
+      data: {
+        id: admin.id,
+        nom: admin.nom,
+        email: admin.email,
+        role: admin.role,
+        createdAt: admin.createdAt.toISOString(),
+        updatedAt: admin.updatedAt.toISOString()
+      }
+    }
+  } catch (error: any) {
+    console.error("Error adding admin:", error?.message || error)
+    if (error?.code === 'P2002') return { success: false as const, error: "Cet email est déjà utilisé par un autre administrateur" }
+    return { success: false as const, error: `Erreur lors de l'ajout de l'administrateur : ${error?.message || String(error)}` }
+  }
+}
+
+export async function deleteAdmin(id: string) {
+  try {
+    // Garde-fou : empêcher de supprimer le dernier Super Admin
+    const adminToDelete = await prisma.admin.findUnique({ where: { id } })
+    if (adminToDelete && adminToDelete.role === "Super Admin") {
+      const superAdminsCount = await prisma.admin.count({
+        where: { role: "Super Admin" }
+      })
+      if (superAdminsCount <= 1) {
+        return { success: false as const, error: "Impossible de supprimer le dernier Super Admin. Au moins un Super Admin est requis." }
+      }
+    }
+
+    await prisma.admin.delete({
+      where: { id }
+    })
+    revalidatePath("/dashboard/parametres")
+    return { success: true as const }
+  } catch (error: any) {
+    console.error("Error deleting admin:", error?.message || error)
+    return { success: false as const, error: `Erreur lors de la suppression de l'administrateur : ${error?.message || String(error)}` }
+  }
+}
+

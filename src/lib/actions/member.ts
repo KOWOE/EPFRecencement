@@ -331,3 +331,27 @@ export async function exportMembers(
   }
 }
 
+export async function getDashboardStats() {
+  try {
+    const [total, chorale, fanfare, musical] = await Promise.all([
+      prisma.member.count(),
+      prisma.member.count({ where: { group_type: "CHORALE" } }),
+      prisma.member.count({ where: { group_type: "FANFARE" } }),
+      prisma.member.count({ where: { group_type: "GROUPE_MUSICAL" } }),
+    ])
+    return {
+      success: true as const,
+      data: {
+        total,
+        chorale,
+        fanfare,
+        musical
+      }
+    }
+  } catch (error: any) {
+    console.error("Error fetching stats:", error?.message || error)
+    return { success: false as const, error: `Erreur lors du calcul des statistiques : ${error?.message || String(error)}` }
+  }
+}
+
+

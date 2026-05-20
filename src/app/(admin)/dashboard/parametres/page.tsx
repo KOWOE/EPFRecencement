@@ -1,10 +1,11 @@
 "use client"
 
-import { Settings, User, Bell, Shield, Key, Database, Plus, Trash2, Loader2 } from "lucide-react"
+import { Settings, User, Bell, Shield, Key, Database, Plus, Trash2, Loader2, Check, X } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
-import { getRegions, addRegion, deleteRegion, getSousRegions, addSousRegion, deleteSousRegion, getGroupes, addGroupe, deleteGroupe } from "@/lib/actions/parametres"
+import { CustomSelect } from "@/components/ui/custom-select"
+import { getRegions, addRegion, deleteRegion, getSousRegions, addSousRegion, deleteSousRegion, getGroupes, addGroupe, deleteGroupe, getAdmins, addAdmin, deleteAdmin } from "@/lib/actions/parametres"
 import { useToast } from "@/context/toast-context"
 
 export default function ParametresPage() {
@@ -33,13 +34,26 @@ export default function ParametresPage() {
   const [groupes, setGroupes] = useState<{id: string, name: string}[]>([])
   const [newGroupe, setNewGroupe] = useState("")
   
+  // Profile States
+  const [profileNom, setProfileNom] = useState("")
+  const [profileEmail, setProfileEmail] = useState("")
+  const [profileRole, setProfileRole] = useState("Super Admin")
+
+  // Admins States
+  const [admins, setAdmins] = useState<{id: string, nom: string, email: string, role: string}[]>([])
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false)
+  const [newAdminNom, setNewAdminNom] = useState("")
+  const [newAdminEmail, setNewAdminEmail] = useState("")
+  const [newAdminRole, setNewAdminRole] = useState("Éditeur")
+  const [isAddingAdmin, setIsAddingAdmin] = useState(false)
+
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [isAddingRegion, setIsAddingRegion] = useState(false)
   const [isAddingSousRegion, setIsAddingSousRegion] = useState(false)
   const [isAddingGroupe, setIsAddingGroupe] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, type: 'region'|'sous-region'|'groupe'|null, id: string | null, name: string | null}>({
+  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, type: 'region'|'sous-region'|'groupe'|'admin'|null, id: string | null, name: string | null}>({
     isOpen: false,
     type: null,
     id: null,
@@ -77,6 +91,11 @@ export default function ParametresPage() {
     
     const storedGroup = localStorage.getItem("setting_notifyGroup")
     if (storedGroup !== null) setNotifyGroup(storedGroup === "true")
+
+    // Load profile
+    setProfileNom(localStorage.getItem("admin_nom") || "Admin EPF")
+    setProfileEmail(localStorage.getItem("admin_email") || "admin@epf-recensement.ci")
+    setProfileRole(localStorage.getItem("admin_role") || "Super Admin")
   }, [])
 
   const togglePublicReg = () => {
@@ -136,12 +155,13 @@ export default function ParametresPage() {
   const loadData = async () => {
     setIsLoadingData(true)
     try {
-      const [regRes, sousRegRes, grpRes] = await Promise.all([
-        getRegions(), getSousRegions(), getGroupes()
+      const [regRes, sousRegRes, grpRes, admRes] = await Promise.all([
+        getRegions(), getSousRegions(), getGroupes(), getAdmins()
       ])
       if (regRes.success && regRes.data) setRegions(regRes.data)
       if (sousRegRes.success && sousRegRes.data) setSousRegions(sousRegRes.data)
       if (grpRes.success && grpRes.data) setGroupes(grpRes.data)
+      if (admRes.success && admRes.data) setAdmins(admRes.data)
     } finally {
       setIsLoadingData(false)
     }
@@ -267,11 +287,71 @@ export default function ParametresPage() {
     }
   }
 
+  const handleDeleteAdmin = async (id: string) => {
+    setIsDeleting(true)
+    try {
+      const res = await deleteAdmin(id)
+      if (res.success) {
+        setAdmins(admins.filter(a => a.id !== id))
+        setDeleteModal({isOpen: false, type: null, id: null, name: null})
+        showToast("Administrateur supprimé !", "success")
+      } else {
+        showAlertDialog("Erreur", res.error || "Erreur lors de la suppression", "error")
+      }
+    } catch (err) {
+      showAlertDialog("Erreur", "Une erreur est survenue lors de la suppression", "error")
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleAddAdmin = async () => {
+    if (!newAdminNom.trim() || !newAdminEmail.trim()) {
+      showAlertDialog("Champs requis", "Veuillez saisir le nom complet et l'adresse email de l'administrateur.", "error")
+      return
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(newAdminEmail)) {
+      showAlertDialog("Format invalide", "Veuillez saisir une adresse email valide.", "error")
+      return
+    }
+    setIsAddingAdmin(true)
+    try {
+      const res = await addAdmin(newAdminNom, newAdminEmail, newAdminRole)
+      if (res.success && res.data) {
+        setAdmins([...admins, res.data])
+        setNewAdminNom("")
+        setNewAdminEmail("")
+        setNewAdminRole("Éditeur")
+        setIsAdminModalOpen(false)
+        showToast("Administrateur ajouté avec succès !", "success")
+      } else {
+        showAlertDialog("Erreur", res.error || "Erreur lors de l'ajout", "error")
+      }
+    } catch (err) {
+      showAlertDialog("Erreur", "Une erreur est survenue lors de l'ajout", "error")
+    } finally {
+      setIsAddingAdmin(false)
+    }
+  }
+
+  const handleSaveProfile = () => {
+    if (!profileNom.trim() || !profileEmail.trim()) {
+      showAlertDialog("Erreur", "Le nom complet et l'email ne peuvent pas être vides.", "error")
+      return
+    }
+    localStorage.setItem("admin_nom", profileNom.trim())
+    localStorage.setItem("admin_email", profileEmail.trim())
+    window.dispatchEvent(new Event("profile-updated"))
+    showToast("Profil mis à jour avec succès !", "success")
+  }
+
   const confirmDelete = () => {
     if (!deleteModal.id || !deleteModal.type) return
     if (deleteModal.type === 'region') handleDeleteRegion(deleteModal.id)
     if (deleteModal.type === 'sous-region') handleDeleteSousRegion(deleteModal.id)
     if (deleteModal.type === 'groupe') handleDeleteGroupe(deleteModal.id)
+    if (deleteModal.type === 'admin') handleDeleteAdmin(deleteModal.id)
   }
 
   return (
@@ -354,31 +434,49 @@ export default function ParametresPage() {
                 </div>
                 <div className="p-6 space-y-6">
                   <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl">
-                      AD
+                    <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl animate-fade-in">
+                      {profileNom ? profileNom.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() : "AD"}
                     </div>
-                    <button className="px-4 py-2 bg-slate-100 text-slate-700 font-medium text-sm rounded-lg hover:bg-slate-200 transition-colors">
-                      Changer l'avatar
-                    </button>
+                    <span className="text-xs font-semibold px-3 py-1 bg-blue-50 text-blue-700 rounded-full">
+                      Initiales de profil
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-slate-700">Nom complet</label>
-                      <input type="text" defaultValue="Admin EPF" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+                      <input 
+                        type="text" 
+                        value={profileNom} 
+                        onChange={(e) => setProfileNom(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-slate-700">Adresse Email</label>
-                      <input type="email" defaultValue="admin@epf-recensement.ci" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" />
+                      <input 
+                        type="email" 
+                        value={profileEmail} 
+                        onChange={(e) => setProfileEmail(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
+                      />
                     </div>
                     <div className="space-y-1.5 md:col-span-2">
                       <label className="text-sm font-medium text-slate-700">Rôle</label>
-                      <input type="text" defaultValue="Super Administrateur" disabled className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed" />
+                      <input 
+                        type="text" 
+                        value={profileRole} 
+                        disabled 
+                        className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed" 
+                      />
                     </div>
                   </div>
 
                   <div className="pt-4 flex justify-end">
-                    <button className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
+                    <button 
+                      onClick={handleSaveProfile}
+                      className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 active:scale-95 cursor-pointer"
+                    >
                       Enregistrer les modifications
                     </button>
                   </div>
@@ -638,33 +736,61 @@ export default function ParametresPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-slate-100">
-                  <h3 className="font-bold text-slate-900 text-lg">Administrateurs du Système</h3>
-                  <p className="text-sm text-slate-500 mt-1">Liste des comptes disposant d'un accès administratif.</p>
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-fade-in-up">
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-lg">Administrateurs du Système</h3>
+                    <p className="text-sm text-slate-500 mt-1">Liste des comptes disposant d'un accès administratif.</p>
+                  </div>
+                  <button 
+                    onClick={() => setIsAdminModalOpen(true)}
+                    className="px-4 py-2 bg-blue-600 text-white font-medium text-sm rounded-xl hover:bg-blue-700 flex items-center gap-2 transition-all shadow-sm shadow-blue-600/20 active:scale-95 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Ajouter
+                  </button>
                 </div>
                 <div className="p-6 space-y-4">
-                  <div className="flex items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center">AE</div>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">Admin EPF</p>
-                        <p className="text-xs text-slate-500">admin@epf-recensement.ci</p>
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full">Super Admin</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center">SE</div>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">Secrétariat EPF</p>
-                        <p className="text-xs text-slate-500">secretariat@epf-recensement.ci</p>
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">Éditeur</span>
-                  </div>
+                  {admins.length === 0 ? (
+                    <div className="flex justify-center py-4 text-slate-400"><Loader2 className="w-6 h-6 animate-spin" /></div>
+                  ) : (
+                    admins.map((admin) => {
+                      const isSelf = admin.email.trim().toLowerCase() === profileEmail.trim().toLowerCase()
+                      return (
+                        <div key={admin.id} className="flex items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center">
+                              {admin.nom.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                                {admin.nom}
+                                {isSelf && <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">Moi</span>}
+                              </p>
+                              <p className="text-xs text-slate-500">{admin.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={cn(
+                              "px-2.5 py-1 text-xs font-bold rounded-full",
+                              admin.role === "Super Admin" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"
+                            )}>
+                              {admin.role}
+                            </span>
+                            {!isSelf && (
+                              <button 
+                                onClick={() => setDeleteModal({ isOpen: true, type: 'admin', id: admin.id, name: admin.nom })}
+                                className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-95 group"
+                                title="Supprimer cet admin"
+                              >
+                                <Trash2 className="w-4 h-4 pointer-events-none group-hover:scale-110 transition-transform" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -802,9 +928,85 @@ export default function ParametresPage() {
         </div>
       </div>
       
+      {/* Modal d'ajout d'administrateur */}
+      {isAdminModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900">Ajouter un administrateur</h3>
+              <button 
+                onClick={() => setIsAdminModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">Nom Complet</label>
+                <input 
+                  type="text" 
+                  value={newAdminNom}
+                  onChange={(e) => setNewAdminNom(e.target.value)}
+                  placeholder="ex: Jean Kouassi"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">Adresse Email</label>
+                <input 
+                  type="email" 
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                  placeholder="ex: jean.kouassi@epf.ci"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">Rôle</label>
+                <CustomSelect 
+                  value={newAdminRole}
+                  onChange={(val) => setNewAdminRole(val)}
+                  options={[
+                    { value: "Super Admin", label: "Super Admin", description: "Accès complet à tous les paramètres et administrateurs" },
+                    { value: "Éditeur", label: "Éditeur", description: "Accès en lecture/écriture aux membres, sans modification des accès système" }
+                  ]}
+                />
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+              <button 
+                onClick={() => setIsAdminModalOpen(false)}
+                className="px-4 py-2 text-slate-700 font-semibold text-sm hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={handleAddAdmin}
+                disabled={isAddingAdmin || !newAdminNom.trim() || !newAdminEmail.trim()}
+                className="px-5 py-2 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-blue-600/20 flex items-center gap-2 cursor-pointer"
+              >
+                {isAddingAdmin && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isAddingAdmin ? "Ajout..." : "Enregistrer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ConfirmModal 
         isOpen={deleteModal.isOpen}
-        title={`Supprimer ${deleteModal.type === 'region' ? 'la région' : deleteModal.type === 'sous-region' ? 'la sous-région' : 'le groupe'}`}
+        title={
+          deleteModal.type === 'region' 
+            ? 'la région' 
+            : deleteModal.type === 'sous-region' 
+              ? 'la sous-région' 
+              : deleteModal.type === 'groupe' 
+                ? 'le groupe' 
+                : 'l\'administrateur'
+        }
         description={`Êtes-vous sûr de vouloir supprimer "${deleteModal.name}" ? Cette action est irréversible.`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModal({isOpen: false, type: null, id: null, name: null})}
