@@ -1,7 +1,7 @@
 "use client"
 
 import { createMember } from "@/lib/actions/member"
-import { getRegions, getSousRegions } from "@/lib/actions/parametres"
+import { getRegions } from "@/lib/actions/parametres"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { X, Check, ChevronRight, ArrowRight, Wind, MapPin, Mic } from "lucide-react"
@@ -48,13 +48,11 @@ export default function FanfareFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [regionsList, setRegionsList] = useState<{value: string, label: string}[]>([])
-  const [sousRegionsList, setSousRegionsList] = useState<{value: string, label: string}[]>([])
 
   useEffect(() => {
     const loadData = async () => {
-      const [reg, sousReg] = await Promise.all([getRegions(), getSousRegions()])
+      const reg = await getRegions()
       if (reg.success && reg.data) setRegionsList(reg.data.map(r => ({ value: r.name, label: r.name })))
-      if (sousReg.success && sousReg.data) setSousRegionsList(sousReg.data.map(r => ({ value: r.name, label: r.name })))
     }
     loadData()
   }, [])
@@ -271,13 +269,13 @@ export default function FanfareFormPage() {
 
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700">Sous-région *</label>
-                  <CustomSelect 
+                  <input 
+                    type="text" 
+                    name="sous_region" 
                     value={formData.sous_region} 
-                    onChange={(val) => handleSelectOption("sous_region", val)} 
-                    options={sousRegionsList.map(r => ({ ...r, icon: <MapPin className="w-4 h-4 text-slate-400" /> }))}
-                    searchable 
-                    placeholder="Sélectionner une sous-région" 
-                    colorTheme="emerald" 
+                    onChange={handleInputChange} 
+                    placeholder="Saisir votre sous-région" 
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all" 
                   />
                 </div>
               </div>
