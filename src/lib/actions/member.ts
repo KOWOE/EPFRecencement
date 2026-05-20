@@ -301,6 +301,15 @@ export async function exportMembers(
       "assemblee": m.assemblee
     }))
 
+    if (format === "pdf") {
+      return { 
+        success: true, 
+        data: JSON.stringify(formattedData), 
+        filename: `membres_export_${new Date().toISOString().slice(0, 10)}.pdf`,
+        mimeType: "application/pdf"
+      }
+    }
+
     // Generate sheet and workbook
     const worksheet = XLSX.utils.json_to_sheet(formattedData)
     const workbook = XLSX.utils.book_new()

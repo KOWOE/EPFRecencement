@@ -116,22 +116,70 @@ export default function ImportsExportsPage() {
         return
       }
 
-      // Dynamic download via Blob
-      const byteCharacters = atob(res.data)
-      const byteNumbers = new Array(byteCharacters.length)
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i)
-      }
-      const byteArray = new Uint8Array(byteNumbers)
-      const blob = new Blob([byteArray], { type: res.mimeType })
+      if (selectedExportFormat === "pdf") {
+        const parsedData = JSON.parse(res.data)
+        
+        // Dynamically import jsPDF and autoTable
+        const { default: jsPDF } = await import("jspdf")
+        const { default: autoTable } = await import("jspdf-autotable")
+        
+        const doc = new jsPDF({ orientation: "landscape" })
+        
+        // Header
+        doc.setFontSize(18)
+        doc.setTextColor(15, 23, 42) // Slate 900
+        doc.text("EPF Recensement - Liste des Membres", 14, 15)
+        
+        doc.setFontSize(10)
+        doc.setTextColor(100, 116, 139) // Slate 500
+        doc.text(`Généré le : ${new Date().toLocaleDateString("fr-FR")} à ${new Date().toLocaleTimeString("fr-FR")}`, 14, 22)
+        
+        // Generate Table
+        autoTable(doc, {
+          startY: 28,
+          head: [['Nom & Prénom', 'Numéro', 'Email', 'Groupe', 'Région', 'Sous-région', 'Assemblée']],
+          body: parsedData.map((m: any) => [
+            m["nom&prenom"],
+            m["numero"],
+            m["email"],
+            m["groupe"],
+            m["region"],
+            m["sous-region"],
+            m["assemblee"]
+          ]),
+          theme: "striped",
+          headStyles: { fillColor: [37, 99, 235] }, // Blue 600
+          styles: { fontSize: 9 },
+          columnStyles: {
+            0: { cellWidth: 45 },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 40 },
+            3: { cellWidth: 30 },
+            4: { cellWidth: 30 },
+            5: { cellWidth: 30 },
+            6: { cellWidth: 35 }
+          }
+        })
+        
+        doc.save(res.filename || `export.pdf`)
+      } else {
+        // Dynamic download via Blob
+        const byteCharacters = atob(res.data)
+        const byteNumbers = new Array(byteCharacters.length)
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray], { type: res.mimeType })
 
-      const link = document.createElement("a")
-      link.href = URL.createObjectURL(blob)
-      link.download = res.filename || `export.${selectedExportFormat}`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(link.href)
+        const link = document.createElement("a")
+        link.href = URL.createObjectURL(blob)
+        link.download = res.filename || `export.${selectedExportFormat}`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(link.href)
+      }
     } catch (error) {
       console.error("Erreur lors de l'exportation :", error)
       alert("Une erreur est survenue lors de l'exportation des données.")
@@ -250,7 +298,8 @@ export default function ImportsExportsPage() {
                     colorTheme="slate"
                     options={[
                       { value: "xlsx", label: "Excel (.xlsx)" },
-                      { value: "csv", label: "CSV (.csv)" }
+                      { value: "csv", label: "CSV (.csv)" },
+                      { value: "pdf", label: "Document PDF (.pdf)" }
                     ]}
                   />
                 </div>

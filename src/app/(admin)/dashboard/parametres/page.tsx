@@ -8,6 +8,19 @@ import { getRegions, addRegion, deleteRegion, getSousRegions, addSousRegion, del
 
 export default function ParametresPage() {
   const [activeTab, setActiveTab] = useState("profil")
+
+  // Security Toggles
+  const [allowPublicReg, setAllowPublicReg] = useState(true)
+  const [requireMfa, setRequireMfa] = useState(false)
+  const [maintenanceMode, setMaintenanceMode] = useState(false)
+  
+  // Notification Toggles
+  const [emailAlerts, setEmailAlerts] = useState(true)
+  const [statReports, setStatReports] = useState(true)
+  const [securityAlerts, setSecurityAlerts] = useState(true)
+  const [notifyChorale, setNotifyChorale] = useState(true)
+  const [notifyFanfare, setNotifyFanfare] = useState(true)
+  const [notifyGroup, setNotifyGroup] = useState(false)
   
   const [regions, setRegions] = useState<{id: string, name: string}[]>([])
   const [newRegion, setNewRegion] = useState("")
@@ -34,7 +47,89 @@ export default function ParametresPage() {
 
   useEffect(() => {
     loadData()
+    
+    // Load local settings
+    const storedPublicReg = localStorage.getItem("setting_allowPublicReg")
+    if (storedPublicReg !== null) setAllowPublicReg(storedPublicReg === "true")
+    
+    const storedMfa = localStorage.getItem("setting_requireMfa")
+    if (storedMfa !== null) setRequireMfa(storedMfa === "true")
+    
+    const storedMaintenance = localStorage.getItem("setting_maintenanceMode")
+    if (storedMaintenance !== null) setMaintenanceMode(storedMaintenance === "true")
+    
+    const storedEmailAlerts = localStorage.getItem("setting_emailAlerts")
+    if (storedEmailAlerts !== null) setEmailAlerts(storedEmailAlerts === "true")
+    
+    const storedStatReports = localStorage.getItem("setting_statReports")
+    if (storedStatReports !== null) setStatReports(storedStatReports === "true")
+    
+    const storedSecAlerts = localStorage.getItem("setting_securityAlerts")
+    if (storedSecAlerts !== null) setSecurityAlerts(storedSecAlerts === "true")
+
+    const storedChorale = localStorage.getItem("setting_notifyChorale")
+    if (storedChorale !== null) setNotifyChorale(storedChorale === "true")
+    
+    const storedFanfare = localStorage.getItem("setting_notifyFanfare")
+    if (storedFanfare !== null) setNotifyFanfare(storedFanfare === "true")
+    
+    const storedGroup = localStorage.getItem("setting_notifyGroup")
+    if (storedGroup !== null) setNotifyGroup(storedGroup === "true")
   }, [])
+
+  const togglePublicReg = () => {
+    const nextVal = !allowPublicReg
+    setAllowPublicReg(nextVal)
+    localStorage.setItem("setting_allowPublicReg", String(nextVal))
+  }
+
+  const toggleMfa = () => {
+    const nextVal = !requireMfa
+    setRequireMfa(nextVal)
+    localStorage.setItem("setting_requireMfa", String(nextVal))
+  }
+
+  const toggleMaintenance = () => {
+    const nextVal = !maintenanceMode
+    setMaintenanceMode(nextVal)
+    localStorage.setItem("setting_maintenanceMode", String(nextVal))
+  }
+
+  const toggleEmailAlerts = () => {
+    const nextVal = !emailAlerts
+    setEmailAlerts(nextVal)
+    localStorage.setItem("setting_emailAlerts", String(nextVal))
+  }
+
+  const toggleStatReports = () => {
+    const nextVal = !statReports
+    setStatReports(nextVal)
+    localStorage.setItem("setting_statReports", String(nextVal))
+  }
+
+  const toggleSecurityAlerts = () => {
+    const nextVal = !securityAlerts
+    setSecurityAlerts(nextVal)
+    localStorage.setItem("setting_securityAlerts", String(nextVal))
+  }
+
+  const toggleNotifyChorale = () => {
+    const nextVal = !notifyChorale
+    setNotifyChorale(nextVal)
+    localStorage.setItem("setting_notifyChorale", String(nextVal))
+  }
+
+  const toggleNotifyFanfare = () => {
+    const nextVal = !notifyFanfare
+    setNotifyFanfare(nextVal)
+    localStorage.setItem("setting_notifyFanfare", String(nextVal))
+  }
+
+  const toggleNotifyGroup = () => {
+    const nextVal = !notifyGroup
+    setNotifyGroup(nextVal)
+    localStorage.setItem("setting_notifyGroup", String(nextVal))
+  }
 
   const loadData = async () => {
     setIsLoadingData(true)
@@ -212,12 +307,29 @@ export default function ParametresPage() {
             Données de base
           </button>
 
-          <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 border border-transparent rounded-xl text-left font-medium text-slate-600 transition-all">
-            <Shield className="w-5 h-5 text-slate-400" />
+          <button 
+            onClick={() => setActiveTab("securite")}
+            className={cn(
+              "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all",
+              activeTab === "securite" 
+                ? "bg-white border border-slate-200 text-slate-900 shadow-sm" 
+                : "hover:bg-slate-50 border border-transparent text-slate-600"
+            )}
+          >
+            <Shield className={cn("w-5 h-5", activeTab === "securite" ? "text-blue-600" : "text-slate-400")} />
             Sécurité & Accès
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 border border-transparent rounded-xl text-left font-medium text-slate-600 transition-all">
-            <Bell className="w-5 h-5 text-slate-400" />
+          
+          <button 
+            onClick={() => setActiveTab("notifications")}
+            className={cn(
+              "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all",
+              activeTab === "notifications" 
+                ? "bg-white border border-slate-200 text-slate-900 shadow-sm" 
+                : "hover:bg-slate-50 border border-transparent text-slate-600"
+            )}
+          >
+            <Bell className={cn("w-5 h-5", activeTab === "notifications" ? "text-blue-600" : "text-slate-400")} />
             Notifications
           </button>
         </div>
@@ -433,6 +545,247 @@ export default function ParametresPage() {
                     )}
                   </div>
 
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "securite" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100">
+                  <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-slate-400" />
+                    Sécurité Globale
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-1">Configurez les règles de sécurité et de contrôle d'accès de la plateforme.</p>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  <div className="flex items-center justify-between py-4 border-b border-slate-50">
+                    <div className="space-y-1 pr-4">
+                      <label className="text-sm font-semibold text-slate-900">Autoriser les inscriptions publiques</label>
+                      <p className="text-xs text-slate-500">Permet aux membres de soumettre les formulaires de recensement en ligne.</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={togglePublicReg}
+                      className={cn(
+                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                        allowPublicReg ? "bg-blue-600" : "bg-slate-200"
+                      )}
+                    >
+                      <span 
+                        className={cn(
+                          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                          allowPublicReg ? "translate-x-5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between py-4 border-b border-slate-50">
+                    <div className="space-y-1 pr-4">
+                      <label className="text-sm font-semibold text-slate-900">Double authentification (MFA)</label>
+                      <p className="text-xs text-slate-500">Exige une vérification en deux étapes pour tous les administrateurs.</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={toggleMfa}
+                      className={cn(
+                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                        requireMfa ? "bg-blue-600" : "bg-slate-200"
+                      )}
+                    >
+                      <span 
+                        className={cn(
+                          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                          requireMfa ? "translate-x-5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between py-4">
+                    <div className="space-y-1 pr-4">
+                      <label className="text-sm font-semibold text-slate-900">Mode Maintenance</label>
+                      <p className="text-xs text-slate-500">Désactive temporairement l'application pour les utilisateurs non administrateurs.</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={toggleMaintenance}
+                      className={cn(
+                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2",
+                        maintenanceMode ? "bg-red-600" : "bg-slate-200"
+                      )}
+                    >
+                      <span 
+                        className={cn(
+                          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                          maintenanceMode ? "translate-x-5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100">
+                  <h3 className="font-bold text-slate-900 text-lg">Administrateurs du Système</h3>
+                  <p className="text-sm text-slate-500 mt-1">Liste des comptes disposant d'un accès administratif.</p>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center">AE</div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">Admin EPF</p>
+                        <p className="text-xs text-slate-500">admin@epf-recensement.ci</p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full">Super Admin</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border border-slate-100 rounded-xl bg-slate-50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center">SE</div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">Secrétariat EPF</p>
+                        <p className="text-xs text-slate-500">secretariat@epf-recensement.ci</p>
+                      </div>
+                    </div>
+                    <span className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">Éditeur</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "notifications" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100">
+                  <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
+                    <Bell className="w-5 h-5 text-slate-400" />
+                    Préférences de Notifications
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-1">Gerez la manière dont vous recevez les alertes et les rapports.</p>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  <div className="flex items-center justify-between py-4 border-b border-slate-50">
+                    <div className="space-y-1 pr-4">
+                      <label className="text-sm font-semibold text-slate-900">Notifications par Email</label>
+                      <p className="text-xs text-slate-500">Recevez des alertes directement dans votre boîte de réception.</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={toggleEmailAlerts}
+                      className={cn(
+                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                        emailAlerts ? "bg-blue-600" : "bg-slate-200"
+                      )}
+                    >
+                      <span 
+                        className={cn(
+                          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                          emailAlerts ? "translate-x-5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between py-4 border-b border-slate-50">
+                    <div className="space-y-1 pr-4">
+                      <label className="text-sm font-semibold text-slate-900">Rapports statistiques réguliers</label>
+                      <p className="text-xs text-slate-500">Recevez un rapport hebdomadaire sur l'état des recensements.</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={toggleStatReports}
+                      className={cn(
+                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                        statReports ? "bg-blue-600" : "bg-slate-200"
+                      )}
+                    >
+                      <span 
+                        className={cn(
+                          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                          statReports ? "translate-x-5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between py-4">
+                    <div className="space-y-1 pr-4">
+                      <label className="text-sm font-semibold text-slate-900">Alertes de sécurité</label>
+                      <p className="text-xs text-slate-500">Soyez notifié immédiatement en cas d'activité suspecte sur votre compte.</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={toggleSecurityAlerts}
+                      className={cn(
+                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                        securityAlerts ? "bg-blue-600" : "bg-slate-200"
+                      )}
+                    >
+                      <span 
+                        className={cn(
+                          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                          securityAlerts ? "translate-x-5" : "translate-x-0"
+                        )}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100">
+                  <h3 className="font-bold text-slate-900 text-lg">Suivi des Recensements</h3>
+                  <p className="text-sm text-slate-500 mt-1">Choisissez pour quels groupes de recensement vous souhaitez recevoir des notifications d'inscription.</p>
+                </div>
+                <div className="p-6 space-y-4">
+                  <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
+                    <input 
+                      type="checkbox" 
+                      checked={notifyChorale}
+                      onChange={toggleNotifyChorale}
+                      className="w-4.5 h-4.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">Groupe Chorale</p>
+                      <p className="text-xs text-slate-500">Notifier lors d'une nouvelle inscription dans la Chorale.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
+                    <input 
+                      type="checkbox" 
+                      checked={notifyFanfare}
+                      onChange={toggleNotifyFanfare}
+                      className="w-4.5 h-4.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">Groupe Fanfare</p>
+                      <p className="text-xs text-slate-500">Notifier lors d'une nouvelle inscription dans la Fanfare.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
+                    <input 
+                      type="checkbox" 
+                      checked={notifyGroup}
+                      onChange={toggleNotifyGroup}
+                      className="w-4.5 h-4.5 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">Groupe Musical</p>
+                      <p className="text-xs text-slate-500">Notifier lors d'une nouvelle inscription dans le Groupe Musical.</p>
+                    </div>
+                  </label>
                 </div>
               </div>
             </div>
