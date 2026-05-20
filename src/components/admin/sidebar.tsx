@@ -119,6 +119,8 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
         onConfirm={confirmLogout}
         onCancel={() => setIsLogoutOpen(false)}
         isLoading={false}
+        confirmText="Se déconnecter"
+        confirmLoadingText="Déconnexion..."
       />
     </div>
   )

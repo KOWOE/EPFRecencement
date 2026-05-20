@@ -931,7 +931,7 @@ export default function ParametresPage() {
       {/* Modal d'ajout d'administrateur */}
       {isAdminModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <h3 className="text-lg font-bold text-slate-900">Ajouter un administrateur</h3>
               <button 
@@ -976,7 +976,7 @@ export default function ParametresPage() {
                 />
               </div>
             </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-2xl">
               <button 
                 onClick={() => setIsAdminModalOpen(false)}
                 className="px-4 py-2 text-slate-700 font-semibold text-sm hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"

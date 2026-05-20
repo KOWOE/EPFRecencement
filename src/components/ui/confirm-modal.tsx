@@ -1,4 +1,5 @@
 import { AlertTriangle, X } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface ConfirmModalProps {
   isOpen: boolean
@@ -7,9 +8,22 @@ interface ConfirmModalProps {
   onConfirm: () => void
   onCancel: () => void
   isLoading?: boolean
+  confirmText?: string
+  confirmLoadingText?: string
+  confirmButtonClassName?: string
 }
 
-export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel, isLoading = false }: ConfirmModalProps) {
+export function ConfirmModal({ 
+  isOpen, 
+  title, 
+  description, 
+  onConfirm, 
+  onCancel, 
+  isLoading = false,
+  confirmText = "Supprimer",
+  confirmLoadingText = "Suppression...",
+  confirmButtonClassName = "bg-rose-600 hover:bg-rose-700 shadow-rose-600/20"
+}: ConfirmModalProps) {
   if (!isOpen) return null
 
   return (
@@ -48,9 +62,12 @@ export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel, 
             <button
               onClick={onConfirm}
               disabled={isLoading}
-              className="flex-1 px-4 py-2.5 bg-rose-600 text-white font-medium rounded-xl hover:bg-rose-700 transition-colors shadow-sm shadow-rose-600/20 disabled:opacity-50"
+              className={cn(
+                "flex-1 px-4 py-2.5 text-white font-medium rounded-xl transition-colors disabled:opacity-50 shadow-sm",
+                confirmButtonClassName
+              )}
             >
-              {isLoading ? "Suppression..." : "Supprimer"}
+              {isLoading ? confirmLoadingText : confirmText}
             </button>
           </div>
         </div>
@@ -58,3 +75,4 @@ export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel, 
     </div>
   )
 }
+
