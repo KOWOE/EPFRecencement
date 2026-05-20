@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
@@ -21,38 +19,23 @@ model Member {
   assemblee         String
   sous_region       String?
   region            String
-  nom_groupe        String?   // Nom de la chorale / fanfare / groupe
-  partition         String?   // Ex: Soprano, Alto, etc.
+  nom_groupe        String?
+  partition         String?
   instrument        String?
   group_type        GroupType
-
-  // Champs spécifiques & techniques
   lecture_solfege   Boolean   @default(false)
   lecture_notes     Boolean   @default(false)
-  
-  // Spécifique Chorale
   chef_choeur       String?
   harmonisation     Boolean   @default(false)
   interet_national  Boolean   @default(false)
   pourquoi_interet  String?
-  
-  // Spécifique Groupe Musical
-  categorie_chantre String?   // Lead / Coeur
-
-  // Attentes
+  categorie_chantre String?
   attentes_bureau   String?
-
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
   @@index([group_type])
   @@index([region])
-}
-
-enum GroupType {
-  CHORALE
-  FANFARE
-  GROUPE_MUSICAL
 }
 
 model Region {
@@ -74,4 +57,10 @@ model Groupe {
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum GroupType {
+  CHORALE
+  FANFARE
+  GROUPE_MUSICAL
 }
