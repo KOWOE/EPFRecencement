@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
-import { supabaseAdmin } from "@/lib/supabase/admin"
+import { getSupabaseAdmin } from "@/lib/supabase/admin"
 
 async function verifyAuth() {
   const supabase = await createClient()
@@ -229,7 +229,7 @@ export async function addAdmin(nom: string, email: string, role: string, passwor
     await verifyAuth()
     
     // Créer le compte dans Supabase Auth en premier
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: authData, error: authError } = await getSupabaseAdmin().auth.admin.createUser({
       email: email.trim().toLowerCase(),
       password: password && password.trim() ? password.trim() : "Recensement@2026",
       email_confirm: true,
@@ -285,11 +285,11 @@ export async function deleteAdmin(id: string) {
 
     // Supprimer de Supabase Auth
     if (adminToDelete) {
-      const { data: usersData } = await supabaseAdmin.auth.admin.listUsers()
+      const { data: usersData } = await getSupabaseAdmin().auth.admin.listUsers()
       if (usersData && usersData.users) {
         const authUser = usersData.users.find(u => u.email === adminToDelete.email)
         if (authUser) {
-           await supabaseAdmin.auth.admin.deleteUser(authUser.id)
+           await getSupabaseAdmin().auth.admin.deleteUser(authUser.id)
         }
       }
     }
@@ -310,13 +310,24 @@ export async function loginAdmin(email: string, mdp?: string) {
     return { success: false as const, error: "L'adresse email est requise" }
   }
   try {
+    // Vérifier que les variables d'environnement sont bien présentes
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.error("CRITICAL: Supabase env vars missing in loginAdmin!")
+      return { success: false as const, error: "Configuration serveur incomplète. Contactez l'administrateur." }
+    }
+
     const supabase = await createClient()
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password: mdp || ""
     })
 
-    if (authError || !authData.user) {
+    if (authError) {
+      console.error("Supabase Auth Error:", authError.message)
+      return { success: false as const, error: "Email ou mot de passe incorrect." }
+    }
+    
+    if (!authData.user) {
       return { success: false as const, error: "Email ou mot de passe incorrect." }
     }
 
@@ -340,7 +351,7 @@ export async function loginAdmin(email: string, mdp?: string) {
       }
     }
   } catch (error: any) {
-    console.error("Error authenticating admin:", error)
-    return { success: false as const, error: "Une erreur est survenue lors de la connexion" }
+    console.error("Error authenticating admin:", error?.message || error)
+    return { success: false as const, error: "Erreur de connexion : " + (error?.message || "Serveur indisponible") }
   }
 }

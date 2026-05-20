@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/context/toast-context"
 import { loginAdmin } from "@/lib/actions/parametres"
-import { ShieldCheck, ArrowLeft, Loader2, Sparkles } from "lucide-react"
+import { ShieldCheck, ArrowLeft, Loader2, Sparkles, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 
 export default function ConnexionPage() {
@@ -14,6 +14,7 @@ export default function ConnexionPage() {
   // Form state
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
 
@@ -234,21 +235,31 @@ export default function ConnexionPage() {
                 Mot de passe
               </label>
             </div>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-                if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }))
-              }}
-              placeholder="Entrez votre mot de passe..."
-              className={`w-full px-4 py-3 rounded-xl border text-sm bg-[#F8FAFC]/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 transition-all ${
-                errors.password 
-                  ? "border-rose-400 focus:ring-rose-500/10 focus:border-rose-500" 
-                  : "border-slate-200 focus:ring-indigo-500/10 focus:border-[#4B39B7]"
-              }`}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }))
+                }}
+                placeholder="Entrez votre mot de passe..."
+                className={`w-full px-4 py-3 rounded-xl border text-sm bg-[#F8FAFC]/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 transition-all pr-12 ${
+                  errors.password 
+                    ? "border-rose-400 focus:ring-rose-500/10 focus:border-rose-500" 
+                    : "border-slate-200 focus:ring-indigo-500/10 focus:border-[#4B39B7]"
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-xs text-rose-500 font-medium">{errors.password}</p>
             )}
