@@ -1,21 +1,65 @@
 "use client"
 
 import { FileUp, FileDown, UploadCloud, DownloadCloud, AlertCircle, FileSpreadsheet, Loader2, CheckCircle2, X } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { CustomSelect } from "@/components/ui/custom-select"
 import * as XLSX from "xlsx"
-import { importMembers, exportMembers } from "@/lib/actions/member"
+import { importMembers, exportMembers, getUniqueAssemblies } from "@/lib/actions/member"
+import { getRegions, getSousRegions } from "@/lib/actions/parametres"
 
 export default function ImportsExportsPage() {
   const [isImporting, setIsImporting] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
   const [activeTab, setActiveTab] = useState<"import" | "export">("export")
   const [selectedExportGroup, setSelectedExportGroup] = useState("")
+  const [selectedExportRegion, setSelectedExportRegion] = useState("")
+  const [selectedExportSousRegion, setSelectedExportSousRegion] = useState("")
+  const [selectedExportAssemblee, setSelectedExportAssemblee] = useState("")
   const [selectedExportFormat, setSelectedExportFormat] = useState("xlsx")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [importSuccess, setImportSuccess] = useState<string | null>(null)
+
+  const [regionsList, setRegionsList] = useState<{ value: string, label: string }[]>([
+    { value: "", label: "Toutes les régions" }
+  ])
+  const [sousRegionsList, setSousRegionsList] = useState<{ value: string, label: string }[]>([
+    { value: "", label: "Toutes les sous-régions" }
+  ])
+  const [assembleesList, setAssembleesList] = useState<{ value: string, label: string }[]>([
+    { value: "", label: "Toutes les assemblées" }
+  ])
+
+  useEffect(() => {
+    async function loadFiltersData() {
+      const regRes = await getRegions()
+      if (regRes.success && regRes.data) {
+        setRegionsList([
+          { value: "", label: "Toutes les régions" },
+          ...regRes.data.map(r => ({ value: r.name, label: r.name }))
+        ])
+      }
+      
+      const subRes = await getSousRegions()
+      if (subRes.success && subRes.data) {
+        setSousRegionsList([
+          { value: "", label: "Toutes les sous-régions" },
+          ...subRes.data.map(sr => ({ value: sr.name, label: sr.name }))
+        ])
+      }
+
+      const assRes = await getUniqueAssemblies()
+      if (assRes.success && assRes.data) {
+        setAssembleesList([
+          { value: "", label: "Toutes les assemblées" },
+          ...assRes.data.map(a => ({ value: a, label: a }))
+        ])
+      }
+    }
+
+    loadFiltersData()
+  }, [])
 
   const handleImport = (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,7 +101,15 @@ export default function ImportsExportsPage() {
   const handleExport = async () => {
     setIsExporting(true)
     try {
-      const res = await exportMembers(selectedExportGroup || undefined, selectedExportFormat)
+      const res = await exportMembers(
+        {
+          groupType: selectedExportGroup || undefined,
+          region: selectedExportRegion || undefined,
+          sousRegion: selectedExportSousRegion || undefined,
+          assemblee: selectedExportAssemblee || undefined,
+        },
+        selectedExportFormat
+      )
       
       if (!res.success || !res.data) {
         alert(res.error || "Erreur lors de la génération de l'exportation.")
@@ -144,7 +196,7 @@ export default function ImportsExportsPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5 relative z-20">
+                <div className="space-y-1.5 relative z-50">
                   <label className="text-xs font-bold text-slate-500 uppercase">Groupe ciblé</label>
                   <CustomSelect 
                     value={selectedExportGroup}
@@ -159,7 +211,37 @@ export default function ImportsExportsPage() {
                     ]}
                   />
                 </div>
-                <div className="space-y-1.5 relative z-10">
+                <div className="space-y-1.5 relative z-40">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Région</label>
+                  <CustomSelect 
+                    value={selectedExportRegion}
+                    onChange={setSelectedExportRegion}
+                    placeholder="Toutes les régions"
+                    colorTheme="slate"
+                    options={regionsList}
+                  />
+                </div>
+                <div className="space-y-1.5 relative z-30">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Sous-région</label>
+                  <CustomSelect 
+                    value={selectedExportSousRegion}
+                    onChange={setSelectedExportSousRegion}
+                    placeholder="Toutes les sous-régions"
+                    colorTheme="slate"
+                    options={sousRegionsList}
+                  />
+                </div>
+                <div className="space-y-1.5 relative z-20">
+                  <label className="text-xs font-bold text-slate-500 uppercase">Assemblée</label>
+                  <CustomSelect 
+                    value={selectedExportAssemblee}
+                    onChange={setSelectedExportAssemblee}
+                    placeholder="Toutes les assemblées"
+                    colorTheme="slate"
+                    options={assembleesList}
+                  />
+                </div>
+                <div className="col-span-2 space-y-1.5 relative z-10">
                   <label className="text-xs font-bold text-slate-500 uppercase">Format</label>
                   <CustomSelect 
                     value={selectedExportFormat}

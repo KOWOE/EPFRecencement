@@ -234,11 +234,51 @@ export async function importMembers(members: any[]) {
   }
 }
 
-export async function exportMembers(groupType?: string, format: string = "xlsx") {
+export async function getUniqueAssemblies() {
+  try {
+    const members = await prisma.member.findMany({
+      select: {
+        assemblee: true
+      },
+      distinct: ['assemblee'],
+      orderBy: {
+        assemblee: 'asc'
+      }
+    })
+    
+    const assemblies = members
+      .map(m => m.assemblee)
+      .filter(a => a && a.trim() !== "")
+      
+    return { success: true, data: assemblies }
+  } catch (error) {
+    console.error("Error fetching assemblies:", error)
+    return { success: false, error: "Erreur lors de la récupération des assemblées" }
+  }
+}
+
+export async function exportMembers(
+  filters: {
+    groupType?: string
+    region?: string
+    sousRegion?: string
+    assemblee?: string
+  },
+  format: string = "xlsx"
+) {
   try {
     const where: any = {}
-    if (groupType) {
-      where.group_type = groupType
+    if (filters.groupType) {
+      where.group_type = filters.groupType
+    }
+    if (filters.region) {
+      where.region = filters.region
+    }
+    if (filters.sousRegion) {
+      where.sous_region = filters.sousRegion
+    }
+    if (filters.assemblee) {
+      where.assemblee = filters.assemblee
     }
 
     const members = await prisma.member.findMany({
