@@ -1,12 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { 
   Church, 
   ArrowRight, 
-  Music, 
-  Wind, 
+  Mic, 
   ShieldCheck, 
   Star, 
   HelpCircle, 
@@ -18,8 +17,37 @@ import {
   Layers,
   CheckCircle2,
   FileSpreadsheet,
-  FileSignature
+  FileSignature,
+  X
 } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M18 8c1.5 0 3 .5 3 2.5v3c0 2-1.5 2.5-3 2.5" />
+      <path d="M21 9v6" />
+      <path d="M3 13h15" />
+      <path d="M3 11h11c1 0 2 .5 2 1.5s-1 1.5-2 1.5H8" />
+      <path d="M9 11V7" />
+      <circle cx="9" cy="6" r="1" />
+      <path d="M12 11V7" />
+      <circle cx="12" cy="6" r="1" />
+      <path d="M15 11V7" />
+      <circle cx="15" cy="6" r="1" />
+      <path d="M2 10.5v3" />
+    </svg>
+  )
+}
 
 const stats = [
   { value: "10 000+", label: "Membres Actifs", icon: Users, color: "text-blue-600 bg-blue-50" },
@@ -32,7 +60,7 @@ const groups = [
     id: "chorale",
     name: "Chorale",
     description: "Coordination nationale des voix pour une louange harmonisée dans toutes nos régions.",
-    icon: Music,
+    icon: Mic,
     color: "bg-blue-600 text-blue-600 border-blue-100 hover:border-blue-300 hover:shadow-blue-100/50",
     glowColor: "from-blue-500/10 to-transparent",
     href: "/recensement/chorale"
@@ -41,7 +69,7 @@ const groups = [
     id: "fanfare",
     name: "Fanfare",
     description: "Structuration des instruments à vent pour magnifier nos célébrations et défilés nationaux.",
-    icon: Wind,
+    icon: TrumpetIcon,
     color: "bg-emerald-600 text-emerald-600 border-emerald-100 hover:border-emerald-300 hover:shadow-emerald-100/50",
     glowColor: "from-emerald-500/10 to-transparent",
     href: "/recensement/fanfare"
@@ -126,9 +154,113 @@ const faqs = [
 
 export default function RootPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [isSynthExpanded, setIsSynthExpanded] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("reveal-active")
+          }
+        })
+      },
+      {
+        threshold: 0.05,
+        rootMargin: "0px 0px -40px 0px"
+      }
+    )
+
+    const elements = document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-zoom")
+    elements.forEach((el) => observer.observe(el))
+
+    return () => {
+      elements.forEach((el) => observer.unobserve(el))
+    }
+  }, [])
+
+  const playInteractiveNote = (type: "vocal" | "brass" | "synth" | "stat" | "pop") => {
+    if (typeof window === "undefined") return
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+      if (!AudioContextClass) return
+      const ctx = new AudioContextClass()
+      const now = ctx.currentTime
+
+      if (type === "vocal") {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.type = "sine"
+        osc.frequency.setValueAtTime(523.25, now) // C5
+        gain.gain.setValueAtTime(0.06, now)
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start(now)
+        osc.stop(now + 0.65)
+      } else if (type === "brass") {
+        const osc1 = ctx.createOscillator()
+        const osc2 = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc1.type = "triangle"
+        osc1.frequency.setValueAtTime(311.13, now) // Eb4
+        osc2.type = "triangle"
+        osc2.frequency.setValueAtTime(466.16, now) // Bb4
+        gain.gain.setValueAtTime(0.04, now)
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
+        osc1.connect(gain)
+        osc2.connect(gain)
+        gain.connect(ctx.destination)
+        osc1.start(now)
+        osc2.start(now)
+        osc1.stop(now + 0.55)
+        osc2.stop(now + 0.55)
+      } else if (type === "synth") {
+        const frequencies = [523.25, 659.25, 783.99, 1046.50]
+        frequencies.forEach((freq, idx) => {
+          const osc = ctx.createOscillator()
+          const gain = ctx.createGain()
+          osc.type = "sine"
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08)
+          gain.gain.setValueAtTime(0.04, now + idx * 0.08)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.4)
+          osc.connect(gain)
+          gain.connect(ctx.destination)
+          osc.start(now + idx * 0.08)
+          osc.stop(now + idx * 0.08 + 0.45)
+        })
+      } else if (type === "stat") {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.type = "sine"
+        osc.frequency.setValueAtTime(392.00, now)
+        osc.frequency.setValueAtTime(784.00, now + 0.06)
+        gain.gain.setValueAtTime(0.05, now)
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25)
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start(now)
+        osc.stop(now + 0.3)
+      } else if (type === "pop") {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.type = "sine"
+        osc.frequency.setValueAtTime(880.00, now)
+        osc.frequency.exponentialRampToValueAtTime(1760.00, now + 0.05)
+        gain.gain.setValueAtTime(0.04, now)
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start(now)
+        osc.stop(now + 0.1)
+      }
+    } catch (e) {}
+  }
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index)
+    playInteractiveNote("pop")
   }
 
   return (
@@ -166,15 +298,26 @@ export default function RootPage() {
       {/* Hero Section */}
       <header className="relative z-10 container mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         {/* Floating Icons for Visual Interest */}
-        <div className="hidden lg:block absolute top-[20%] left-[8%] animate-float text-blue-400 opacity-60">
-          <Music className="w-10 h-10" />
+        <div 
+          onClick={() => playInteractiveNote("vocal")}
+          className="hidden lg:block absolute top-[20%] left-[8%] animate-float text-blue-400 opacity-60 hover:opacity-100 hover:scale-125 hover:rotate-12 active:scale-95 transition-all duration-300 cursor-pointer p-3 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-100/50 shadow-sm"
+          title="Cliquez pour chanter 🎵"
+        >
+          <Mic className="w-8 h-8" />
         </div>
-        <div className="hidden lg:block absolute top-[15%] right-[10%] animate-float-delayed text-indigo-400 opacity-60">
-          <Wind className="w-10 h-10" />
+        <div 
+          onClick={() => playInteractiveNote("brass")}
+          className="hidden lg:block absolute top-[15%] right-[10%] animate-float-delayed text-indigo-400 opacity-60 hover:opacity-100 hover:scale-125 hover:-rotate-12 active:scale-95 transition-all duration-300 cursor-pointer p-3 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-100/50 shadow-sm"
+          title="Cliquez pour souffler 🎺"
+        >
+          <TrumpetIcon className="w-8 h-8" />
         </div>
 
         <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50/80 border border-blue-100/50 rounded-full text-blue-700 text-xs font-bold tracking-wider uppercase animate-pulse">
+          <div 
+            onClick={() => playInteractiveNote("synth")}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50/80 border border-blue-100/50 rounded-full text-blue-700 text-xs font-bold tracking-wider uppercase cursor-pointer hover:bg-blue-100/50 active:scale-95 transition-all animate-pulse"
+          >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Recensement National Officiel 2026</span>
           </div>
@@ -202,13 +345,17 @@ export default function RootPage() {
         </div>
 
         {/* Stats Row */}
-        <div className="max-w-5xl mx-auto mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 animate-fade-in-up delay-150">
+        <div className="max-w-5xl mx-auto mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6">
           {stats.map((stat, idx) => (
             <div 
               key={idx}
-              className="p-6 bg-white/70 backdrop-blur-md rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 flex items-center gap-4 group"
+              onClick={() => playInteractiveNote("stat")}
+              className={cn(
+                "p-6 bg-white/70 backdrop-blur-md rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 flex items-center gap-4 group cursor-pointer reveal-zoom",
+                idx === 0 ? "reveal-stagger-1" : idx === 1 ? "reveal-stagger-2" : "reveal-stagger-3"
+              )}
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${stat.color} group-hover:scale-105 transition-transform duration-300`}>
+              <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300", stat.color)}>
                 <stat.icon className="w-6 h-6" />
               </div>
               <div>
@@ -223,7 +370,7 @@ export default function RootPage() {
       {/* Main Feature Cards */}
       <section className="relative z-10 py-16 bg-white border-y border-slate-100">
         <div className="container mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3 reveal">
             <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
               Choisissez votre département
             </h2>
@@ -233,18 +380,26 @@ export default function RootPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {groups.map((group) => (
+            {groups.map((group, idx) => (
               <Link 
                 key={group.id} 
                 href={group.href}
-                className="group relative bg-slate-50/50 p-8 rounded-3xl border border-slate-200/60 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-left flex flex-col h-full overflow-hidden"
+                onMouseEnter={() => {
+                  if (group.id === "chorale") playInteractiveNote("vocal")
+                  else if (group.id === "fanfare") playInteractiveNote("brass")
+                  else playInteractiveNote("synth")
+                }}
+                className={cn(
+                  "group relative bg-slate-50/50 p-8 rounded-3xl border border-slate-200/60 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-left flex flex-col h-full overflow-hidden reveal-zoom",
+                  idx === 0 ? "reveal-stagger-1" : idx === 1 ? "reveal-stagger-2" : "reveal-stagger-3"
+                )}
               >
                 {/* Glow Effect */}
-                <div className={`absolute -right-16 -top-16 w-36 h-36 bg-gradient-to-br ${group.glowColor} rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500`} />
+                <div className={cn("absolute -right-16 -top-16 w-36 h-36 bg-gradient-to-br rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500", group.glowColor)} />
 
                 <div className="relative">
                   <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm mb-6 group-hover:scale-110 group-hover:shadow-md transition-all duration-300">
-                    <group.icon className={`w-8 h-8 ${group.color.split(" ")[1]}`} />
+                    <group.icon className={cn("w-8 h-8", group.color.split(" ")[1])} />
                   </div>
                   
                   <h3 className="text-xl font-bold text-slate-900 mb-3">{group.name}</h3>
@@ -266,7 +421,7 @@ export default function RootPage() {
       {/* "Comment ça marche" Section */}
       <section className="relative z-10 py-20 md:py-24">
         <div className="container mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
+          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3 reveal">
             <span className="px-3.5 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider">
               Fonctionnement
             </span>
@@ -285,10 +440,14 @@ export default function RootPage() {
             {steps.map((item, idx) => (
               <div 
                 key={idx}
-                className="relative bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 z-10 group"
+                onClick={() => playInteractiveNote("pop")}
+                className={cn(
+                  "relative bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 z-10 group cursor-pointer reveal-left",
+                  idx === 0 ? "reveal-stagger-1" : idx === 1 ? "reveal-stagger-2" : "reveal-stagger-3"
+                )}
               >
                 <div className="flex justify-between items-start mb-6">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${item.color} group-hover:scale-105 transition-transform duration-300`}>
+                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300", item.color)}>
                     <item.icon className="w-6 h-6" />
                   </div>
                   <span className="text-4xl font-black text-slate-100 group-hover:text-slate-200 transition-colors">
@@ -306,7 +465,7 @@ export default function RootPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="relative z-10 py-20 bg-slate-900 text-white rounded-[2.5rem] mx-4 md:mx-8 mb-20 overflow-hidden shadow-2xl">
+      <section className="relative z-10 py-20 bg-slate-900 text-white rounded-[2.5rem] mx-4 md:mx-8 mb-20 overflow-hidden shadow-2xl reveal">
         <div className="absolute inset-0 bg-grid-line opacity-[0.1] pointer-events-none" />
         <div className="absolute -left-32 -bottom-32 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute -right-32 -top-32 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
@@ -328,7 +487,11 @@ export default function RootPage() {
             {testimonials.map((item, idx) => (
               <div 
                 key={idx}
-                className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-3xl flex flex-col justify-between hover:bg-white/[0.08] transition-all duration-300"
+                onClick={() => playInteractiveNote("synth")}
+                className={cn(
+                  "bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-3xl flex flex-col justify-between hover:bg-white/[0.08] transition-all duration-300 cursor-pointer reveal-right",
+                  idx === 0 ? "reveal-stagger-1" : idx === 1 ? "reveal-stagger-2" : "reveal-stagger-3"
+                )}
               >
                 <div className="space-y-6">
                   {/* Rating Stars */}
@@ -358,7 +521,7 @@ export default function RootPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="relative z-10 py-16 max-w-4xl mx-auto px-6 mb-20">
+      <section className="relative z-10 py-16 max-w-4xl mx-auto px-6 mb-20 reveal">
         <div className="text-center mb-12 space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-full text-slate-600 text-xs font-bold uppercase tracking-wider">
             <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
@@ -378,7 +541,10 @@ export default function RootPage() {
             return (
               <div 
                 key={index}
-                className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300"
+                className={cn(
+                  "bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 reveal",
+                  index === 0 ? "reveal-stagger-1" : index === 1 ? "reveal-stagger-2" : index === 2 ? "reveal-stagger-3" : "reveal-stagger-4"
+                )}
               >
                 <button
                   onClick={() => toggleFaq(index)}
@@ -403,7 +569,7 @@ export default function RootPage() {
       </section>
 
       {/* Final Call to Action */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 mb-24 animate-fade-in-up">
+      <section className="relative z-10 max-w-5xl mx-auto px-6 mb-24 reveal-zoom">
         <div className="relative bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 rounded-[2.5rem] shadow-xl p-8 md:p-14 text-center overflow-hidden">
           {/* Decorative shapes */}
           <div className="absolute inset-0 bg-grid-line opacity-[0.08]" />
@@ -471,6 +637,86 @@ export default function RootPage() {
           </div>
         </div>
       </footer>
+
+      {/* Floating Mini-Synth Widget (Surprise Easter Egg) */}
+      <div className="fixed bottom-6 left-6 z-[999] pointer-events-auto">
+        {!isSynthExpanded ? (
+          <button
+            onClick={() => {
+              setIsSynthExpanded(true)
+              playInteractiveNote("synth")
+            }}
+            className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-blue-600/30 transition-all hover:scale-110 active:scale-95 group relative overflow-hidden"
+            title="Activer le Mini-Synthé 🎹"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Sparkles className="w-5 h-5 relative z-10 animate-pulse" />
+          </button>
+        ) : (
+          <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl p-5 shadow-2xl w-72 space-y-4 animate-in slide-in-from-bottom-5 duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-slate-800">
+                <Mic className="w-4 h-4 text-blue-600 animate-bounce" />
+                <span className="font-bold text-xs uppercase tracking-wider">Mini Synthé EPF</span>
+              </div>
+              <button 
+                onClick={() => {
+                  setIsSynthExpanded(false)
+                  playInteractiveNote("pop")
+                }}
+                className="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            
+            <p className="text-[10px] text-slate-400 leading-normal">
+              Cliquez sur les touches pour composer une louange ! 🎵
+            </p>
+
+            <div className="grid grid-cols-5 gap-1.5 pt-2">
+              {[
+                { note: "Do", freq: 523.25, color: "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" },
+                { note: "Ré", freq: 587.33, color: "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" },
+                { note: "Mi", freq: 659.25, color: "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" },
+                { note: "Sol", freq: 783.99, color: "bg-blue-500 hover:bg-blue-600 shadow-blue-500/20" },
+                { note: "La", freq: 880.00, color: "bg-violet-500 hover:bg-violet-600 shadow-violet-500/20" },
+              ].map((key, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      try {
+                        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+                        if (AudioContextClass) {
+                          const ctx = new AudioContextClass()
+                          const now = ctx.currentTime
+                          const osc = ctx.createOscillator()
+                          const gain = ctx.createGain()
+                          osc.type = "sine"
+                          osc.frequency.setValueAtTime(key.freq, now)
+                          gain.gain.setValueAtTime(0.08, now)
+                          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
+                          osc.connect(gain)
+                          gain.connect(ctx.destination)
+                          osc.start(now)
+                          osc.stop(now + 0.5)
+                        }
+                      } catch(e) {}
+                    }
+                  }}
+                  className={cn(
+                    "h-16 rounded-xl flex flex-col justify-end pb-2 items-center text-white text-[10px] font-bold shadow-md active:scale-95 transition-all hover:-translate-y-0.5 cursor-pointer",
+                    key.color
+                  )}
+                >
+                  {key.note}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
     </div>
   )

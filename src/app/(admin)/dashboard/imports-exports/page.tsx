@@ -192,8 +192,8 @@ export default function ImportsExportsPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center gap-4">
+    <div className="space-y-8 animate-fade-in-up">
+      <div className="flex items-center gap-4 animate-fade-in-up delay-75">
         <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
           <FileSpreadsheet className="w-6 h-6 text-blue-600" />
         </div>
@@ -203,7 +203,7 @@ export default function ImportsExportsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden animate-fade-in-up delay-150">
         {/* Tabs */}
         <div className="flex border-b border-slate-100">
           <button 

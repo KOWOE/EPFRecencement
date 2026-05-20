@@ -3,12 +3,39 @@
 import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Filter, Search, ChevronDown, Calendar, MoreHorizontal, Edit, Trash2, Loader2, X, Users, Music, Wind, Church, Phone, Mail, MapPin } from "lucide-react"
+import { Plus, Filter, Search, ChevronDown, Calendar, MoreHorizontal, Edit, Trash2, Loader2, X, Users, Mic, Church, Phone, Mail, MapPin } from "lucide-react"
 import { CustomSelect } from "@/components/ui/custom-select"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { getMembers, deleteMember, updateMember } from "@/lib/actions/member"
 import { getRegions } from "@/lib/actions/parametres"
 import { useToast } from "@/context/toast-context"
+
+function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M18 8c1.5 0 3 .5 3 2.5v3c0 2-1.5 2.5-3 2.5" />
+      <path d="M21 9v6" />
+      <path d="M3 13h15" />
+      <path d="M3 11h11c1 0 2 .5 2 1.5s-1 1.5-2 1.5H8" />
+      <path d="M9 11V7" />
+      <circle cx="9" cy="6" r="1" />
+      <path d="M12 11V7" />
+      <circle cx="12" cy="6" r="1" />
+      <path d="M15 11V7" />
+      <circle cx="15" cy="6" r="1" />
+      <path d="M2 10.5v3" />
+    </svg>
+  )
+}
 
 interface MemberTableProps {
   showStats?: boolean
@@ -142,7 +169,7 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
                   "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-3",
                   selectedGroup === "CHORALE" ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-blue-50 text-blue-600"
                 )}>
-                  <Music className="w-7 h-7" />
+                  <Mic className="w-7 h-7" />
                 </div>
               </div>
             </div>
@@ -167,7 +194,7 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
                   "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-3",
                   selectedGroup === "FANFARE" ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-blue-50 text-blue-600"
                 )}>
-                  <Wind className="w-7 h-7" />
+                  <TrumpetIcon className="w-7 h-7" />
                 </div>
               </div>
             </div>

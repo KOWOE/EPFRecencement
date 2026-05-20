@@ -2,9 +2,36 @@
 
 import { StatCard } from "@/components/admin/stat-card"
 import { MemberTable } from "@/components/admin/member-table"
-import { Users, Music, Wind, Church } from "lucide-react"
+import { Users, Mic, Church } from "lucide-react"
 import { useEffect, useState } from "react"
 import { getDashboardStats } from "@/lib/actions/member"
+
+function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M18 8c1.5 0 3 .5 3 2.5v3c0 2-1.5 2.5-3 2.5" />
+      <path d="M21 9v6" />
+      <path d="M3 13h15" />
+      <path d="M3 11h11c1 0 2 .5 2 1.5s-1 1.5-2 1.5H8" />
+      <path d="M9 11V7" />
+      <circle cx="9" cy="6" r="1" />
+      <path d="M12 11V7" />
+      <circle cx="12" cy="6" r="1" />
+      <path d="M15 11V7" />
+      <circle cx="15" cy="6" r="1" />
+      <path d="M2 10.5v3" />
+    </svg>
+  )
+}
 
 export default function DashboardPage() {
   const [adminName, setAdminName] = useState("Admin EPF")
@@ -75,14 +102,14 @@ export default function DashboardPage() {
               title="Choristes" 
               value={stats.chorale} 
               trend={`${stats.total > 0 ? Math.round((stats.chorale / stats.total) * 100) : 0}% du total`}
-              icon={Music}
+              icon={Mic}
               className="animate-fade-in-up delay-150"
             />
             <StatCard 
               title="Fanfaristes" 
               value={stats.fanfare} 
               trend={`${stats.total > 0 ? Math.round((stats.fanfare / stats.total) * 100) : 0}% du total`}
-              icon={Wind}
+              icon={TrumpetIcon}
               className="animate-fade-in-up delay-225"
             />
             <StatCard 

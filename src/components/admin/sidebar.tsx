@@ -7,8 +7,7 @@ import {
   Users, 
   Settings,
   Church,
-  Music,
-  Wind,
+  Mic,
   FileSpreadsheet,
   X,
   LogOut
@@ -18,11 +17,38 @@ import { useState } from "react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { useToast } from "@/context/toast-context"
 
+function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M18 8c1.5 0 3 .5 3 2.5v3c0 2-1.5 2.5-3 2.5" />
+      <path d="M21 9v6" />
+      <path d="M3 13h15" />
+      <path d="M3 11h11c1 0 2 .5 2 1.5s-1 1.5-2 1.5H8" />
+      <path d="M9 11V7" />
+      <circle cx="9" cy="6" r="1" />
+      <path d="M12 11V7" />
+      <circle cx="12" cy="6" r="1" />
+      <path d="M15 11V7" />
+      <circle cx="15" cy="6" r="1" />
+      <path d="M2 10.5v3" />
+    </svg>
+  )
+}
+
 const sidebarItems = [
   { name: "Tableau de Bord", href: "/dashboard", icon: LayoutDashboard },
   { name: "Tous les Membres", href: "/dashboard/membres", icon: Users },
-  { name: "Chorale", href: "/dashboard/chorale", icon: Music },
-  { name: "Fanfare", href: "/dashboard/fanfare", icon: Wind },
+  { name: "Chorale", href: "/dashboard/chorale", icon: Mic },
+  { name: "Fanfare", href: "/dashboard/fanfare", icon: TrumpetIcon },
   { name: "Groupe Musical", href: "/dashboard/groupe-musical", icon: Church },
   { name: "Imports & Exports", href: "/dashboard/imports-exports", icon: FileSpreadsheet },
 ]
@@ -51,15 +77,19 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
       isMobile ? "w-full" : "w-64"
     )}>
       <div className="p-6 flex items-center justify-between">
-        <div>
+        <Link 
+          href="/" 
+          onClick={onClose}
+          className="flex flex-col group hover:opacity-90 transition-opacity"
+        >
           <h1 className="text-xl font-bold flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-white flex items-center justify-center shrink-0">
               <img src="/logo.jpg" alt="Logo EPF" className="w-full h-full object-cover" />
             </div>
-            <span>EPF System</span>
+            <span>EPF Recensement</span>
           </h1>
           <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Recensement National</p>
-        </div>
+        </Link>
         {isMobile && (
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg">
             <X className="w-6 h-6" />

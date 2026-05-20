@@ -1,6 +1,6 @@
 "use client"
 
-import { LucideIcon } from "lucide-react"
+import React from "react"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
 
@@ -8,7 +8,7 @@ interface StatCardProps {
   title: string
   value: string | number
   trend?: string
-  icon: LucideIcon
+  icon: React.ComponentType<{ className?: string }>
   className?: string
 }
 
