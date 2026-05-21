@@ -51,7 +51,21 @@ export default function GroupeMusicalFormPage() {
   useEffect(() => {
     const loadData = async () => {
       const reg = await getRegions()
-      if (reg.success && reg.data) setRegionsList(reg.data.map(r => ({ value: r.name, label: r.name })))
+      if (reg.success && reg.data && reg.data.length > 0) {
+        setRegionsList(reg.data.map(r => ({ value: r.name, label: r.name })))
+      } else {
+        setRegionsList([
+          { value: "Abidjan", label: "Abidjan" },
+          { value: "Bouaké", label: "Bouaké" },
+          { value: "Yamoussoukro", label: "Yamoussoukro" },
+          { value: "Korhogo", label: "Korhogo" },
+          { value: "Daloa", label: "Daloa" },
+          { value: "San-Pédro", label: "San-Pédro" },
+          { value: "Man", label: "Man" },
+          { value: "Gagnoa", label: "Gagnoa" },
+          { value: "Autre", label: "Autre" }
+        ])
+      }
     }
     loadData()
   }, [])
@@ -211,7 +225,7 @@ export default function GroupeMusicalFormPage() {
 
       <div className="relative z-10 w-full px-6 py-4 flex items-center justify-between">
         <button 
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/recensement")}
           className="w-10 h-10 rounded-full bg-slate-200/50 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors"
         >
           <X className="w-5 h-5" />
@@ -257,7 +271,7 @@ export default function GroupeMusicalFormPage() {
         </button>
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 overflow-y-auto pb-24">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-start md:justify-center px-4 pt-12 md:pt-0 overflow-y-auto pb-24">
         
         <div className="absolute top-10 left-1/2 -translate-x-1/2 text-[10vw] font-bold text-slate-900/[0.02] whitespace-nowrap pointer-events-none select-none">
           Groupe Musical

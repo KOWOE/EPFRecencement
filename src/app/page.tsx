@@ -359,7 +359,7 @@ export default function RootPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-50/50 overflow-x-hidden font-sans">
+    <div className="relative min-h-screen bg-slate-50/50 overflow-x-clip font-sans">
       
       {/* Background Decorative Textures & Glows */}
       <div className="absolute inset-0 bg-grid-pattern pointer-events-none z-0" />
@@ -380,13 +380,6 @@ export default function RootPage() {
               EPF <span className="text-blue-600">Recensement</span>
             </span>
           </div>
-          <Link
-            href="/connexion"
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:text-blue-600 hover:border-blue-500/20 hover:bg-blue-50/20 hover:shadow-sm transition-all"
-          >
-            <ShieldCheck className="w-4 h-4 text-blue-600" />
-            <span>Accès Administration</span>
-          </Link>
         </div>
       </nav>
 
@@ -721,7 +714,6 @@ export default function RootPage() {
             <div className="space-y-4">
               <h4 className="text-white font-bold text-sm uppercase tracking-wider">Liens Utiles</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/connexion" className="hover:text-white transition-colors">Administration</Link></li>
                 <li><a href="#" className="hover:text-white transition-colors">Confidentialité</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Support & Contact</a></li>
               </ul>
