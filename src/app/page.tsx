@@ -359,7 +359,7 @@ export default function RootPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-slate-50/50 overflow-x-clip font-sans">
+    <div className="relative min-h-screen bg-slate-50/50 overflow-clip font-sans">
       
       {/* Background Decorative Textures & Glows */}
       <div className="absolute inset-0 bg-grid-pattern pointer-events-none z-0" />
