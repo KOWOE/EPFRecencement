@@ -17,8 +17,7 @@ interface CustomSelectProps {
   options: Option[]
   placeholder?: string
   searchable?: boolean
-  className?: string
-  colorTheme?: "blue" | "emerald" | "indigo" | "slate"
+  colorTheme?: "blue" | "emerald" | "indigo" | "slate" | "amber"
 }
 
 export function CustomSelect({
@@ -77,6 +76,13 @@ export function CustomSelect({
       bgSelected: "bg-slate-100",
       textSelected: "text-slate-900",
       check: "text-slate-700"
+    },
+    amber: {
+      ring: "focus:ring-amber-500",
+      borderOpen: "border-amber-500",
+      bgSelected: "bg-amber-50/80",
+      textSelected: "text-amber-700",
+      check: "text-amber-600"
     }
   }
 

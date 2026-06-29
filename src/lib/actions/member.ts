@@ -25,7 +25,8 @@ const memberSchema = z.object({
   nom_groupe: z.string().optional(),
   partition: z.string().optional(),
   instrument: z.string().optional(),
-  group_type: z.enum(["CHORALE", "FANFARE", "GROUPE_MUSICAL"]),
+  group_type: z.enum(["CHORALE", "FANFARE", "GROUPE_MUSICAL", "JEUNESSE"]),
+  
   
   // Techniques
   lecture_solfege: z.boolean().default(false),
@@ -42,6 +43,9 @@ const memberSchema = z.object({
   
   // Attentes
   attentes_bureau: z.string().optional(),
+  
+  // Jeunesse
+  role_jeunesse: z.string().optional(),
 })
 
 export async function createMember(formData: FormData) {
@@ -224,11 +228,13 @@ export async function importMembers(formData: FormData) {
 
       // 4. Resolve group type
       const rawGroup = String(getNormalizedValue(m, ["groupe", "group", "groupe_type"]) || "").toUpperCase()
-      let group_type: "CHORALE" | "FANFARE" | "GROUPE_MUSICAL" = "CHORALE"
+      let group_type: "CHORALE" | "FANFARE" | "GROUPE_MUSICAL" | "JEUNESSE" = "CHORALE"
       if (rawGroup.includes("FANFARE")) {
         group_type = "FANFARE"
       } else if (rawGroup.includes("MUSICAL") || rawGroup.includes("GROUPE")) {
         group_type = "GROUPE_MUSICAL"
+      } else if (rawGroup.includes("JEUNESSE") || rawGroup.includes("JEUNE")) {
+        group_type = "JEUNESSE"
       }
 
       // 5. Resolve region, subregion and assemblee
@@ -347,10 +353,11 @@ export async function exportMembers(
       "nom&prenom": `${m.nom} ${m.prenom}`.trim(),
       "numero": m.telephone,
       "email": m.email || "",
-      "groupe": m.group_type === "CHORALE" ? "Chorale" : m.group_type === "FANFARE" ? "Fanfare" : "Groupe Musical",
+      "groupe": m.group_type === "CHORALE" ? "Chorale" : m.group_type === "FANFARE" ? "Fanfare" : m.group_type === "JEUNESSE" ? "Jeunesse" : "Groupe Musical",
       "region": m.region,
       "sous-region": m.sous_region || "",
-      "assemblee": m.assemblee
+      "assemblee": m.assemblee,
+      "role": m.role_jeunesse || ""
     }))
 
     if (format === "pdf") {
@@ -396,11 +403,12 @@ export async function exportMembers(
 export async function getDashboardStats() {
   try {
     await verifyAuth()
-    const [total, chorale, fanfare, musical] = await Promise.all([
+    const [total, chorale, fanfare, musical, jeunesse] = await Promise.all([
       prisma.member.count(),
       prisma.member.count({ where: { group_type: "CHORALE" } }),
       prisma.member.count({ where: { group_type: "FANFARE" } }),
       prisma.member.count({ where: { group_type: "GROUPE_MUSICAL" } }),
+      prisma.member.count({ where: { group_type: "JEUNESSE" } }),
     ])
     return {
       success: true as const,
@@ -408,7 +416,8 @@ export async function getDashboardStats() {
         total,
         chorale,
         fanfare,
-        musical
+        musical,
+        jeunesse
       }
     }
   } catch (error: any) {

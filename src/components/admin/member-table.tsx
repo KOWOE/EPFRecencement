@@ -146,6 +146,7 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
     chorale: members.filter(m => m.group_type === "CHORALE").length,
     fanfare: members.filter(m => m.group_type === "FANFARE").length,
     groupeMusical: members.filter(m => m.group_type === "GROUPE_MUSICAL").length,
+    jeunesse: members.filter(m => m.group_type === "JEUNESSE").length,
   }
 
   return (
@@ -333,7 +334,8 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
                       { value: "", label: "Tous les groupes" },
                       { value: "CHORALE", label: "Chorale" },
                       { value: "FANFARE", label: "Fanfare" },
-                      { value: "GROUPE_MUSICAL", label: "Groupe Musical" }
+                      { value: "GROUPE_MUSICAL", label: "Groupe Musical" },
+                      { value: "JEUNESSE", label: "Jeunesse" }
                     ]}
                   />
                 </div>
@@ -372,6 +374,9 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
                     </button>
                     <button onClick={() => router.push("/recensement/groupe-musical")} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 rounded-lg transition-colors">
                       Membre Grp. Musical
+                    </button>
+                    <button onClick={() => router.push("/recensement/jeunesse")} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-amber-500 rounded-lg transition-colors">
+                      Membre Jeunesse
                     </button>
                   </div>
                 </div>
@@ -428,7 +433,8 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
                       "px-3 py-1 text-xs font-semibold rounded-full",
                       member.group_type === "CHORALE" ? "bg-blue-50 text-blue-700" :
                         member.group_type === "FANFARE" ? "bg-emerald-50 text-emerald-700" :
-                          "bg-indigo-50 text-indigo-700"
+                          member.group_type === "JEUNESSE" ? "bg-amber-50 text-amber-700" :
+                            "bg-indigo-50 text-indigo-700"
                     )}>
                       {member.group_type}
                     </span>
@@ -513,7 +519,8 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
                       "inline-flex mt-2 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md border",
                       member.group_type === "CHORALE" ? "bg-blue-50 text-blue-700 border-blue-100/50" :
                         member.group_type === "FANFARE" ? "bg-emerald-50 text-emerald-700 border-emerald-100/50" :
-                          "bg-indigo-50 text-indigo-700 border-indigo-100/50"
+                          member.group_type === "JEUNESSE" ? "bg-amber-50 text-amber-700 border-amber-100/50" :
+                            "bg-indigo-50 text-indigo-700 border-indigo-100/50"
                     )}>
                       {member.group_type}
                     </span>

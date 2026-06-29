@@ -2,9 +2,26 @@
 
 import { StatCard } from "@/components/admin/stat-card"
 import { MemberTable } from "@/components/admin/member-table"
-import { Users, Mic } from "lucide-react"
+import { Users, Mic, FlameIcon as Flame } from "lucide-react"
 import { useEffect, useState } from "react"
 import { getDashboardStats } from "@/lib/actions/member"
+
+function FlameIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+    </svg>
+  )
+}
 
 function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -60,7 +77,8 @@ export default function DashboardPage() {
     total: 0,
     chorale: 0,
     fanfare: 0,
-    musical: 0
+    musical: 0,
+    jeunesse: 0
   })
   const [isLoading, setIsLoading] = useState(true)
 
@@ -96,9 +114,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 5 }).map((_, i) => (
             <div 
               key={i} 
               className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between animate-pulse"
@@ -140,12 +158,19 @@ export default function DashboardPage() {
               icon={MicCableIcon}
               className="animate-fade-in-up delay-300"
             />
+            <StatCard 
+              title="Jeunesse" 
+              value={stats.jeunesse} 
+              trend={`${stats.total > 0 ? Math.round((stats.jeunesse / stats.total) * 100) : 0}% du total`}
+              icon={FlameIcon}
+              className="animate-fade-in-up delay-375"
+            />
           </>
         )}
       </div>
 
       {/* Members Table */}
-      <div className="grid grid-cols-1 gap-8 animate-fade-in-up delay-375">
+      <div className="grid grid-cols-1 gap-8 animate-fade-in-up delay-500">
         <MemberTable />
       </div>
     </div>
