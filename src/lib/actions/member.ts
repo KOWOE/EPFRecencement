@@ -426,4 +426,38 @@ export async function getDashboardStats() {
   }
 }
 
+export async function checkMemberRegistration(nom: string, prenom: string) {
+  try {
+    const member = await prisma.member.findFirst({
+      where: {
+        nom: {
+          equals: nom.trim(),
+          mode: 'insensitive'
+        },
+        prenom: {
+          equals: prenom.trim(),
+          mode: 'insensitive'
+        }
+      },
+      select: {
+        group_type: true
+      }
+    })
 
+    if (member) {
+      return {
+        success: true as const,
+        isRegistered: true as const,
+        group: member.group_type
+      }
+    }
+
+    return {
+      success: true as const,
+      isRegistered: false as const
+    }
+  } catch (error: any) {
+    console.error("Error checking registration:", error?.message || error)
+    return { success: false as const, error: "Erreur lors de la vérification de l'inscription." }
+  }
+}

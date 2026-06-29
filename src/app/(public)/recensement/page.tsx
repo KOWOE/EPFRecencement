@@ -1,6 +1,6 @@
 import Link from "next/link"
 import React from "react"
-import { Music, ArrowRight } from "lucide-react"
+import { Music, ArrowRight, Search } from "lucide-react"
 
 function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -143,7 +143,17 @@ export default function RecensementSelectionPage() {
         ))}
       </div>
 
-      <div className="bg-blue-50 p-8 rounded-3xl border border-blue-100 mt-16 max-w-2xl mx-auto animate-fade-in-up delay-300">
+      <div className="mt-8 animate-fade-in-up delay-300">
+        <Link 
+          href="/recensement/verification"
+          className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl font-medium hover:bg-slate-800 hover:shadow-lg transition-all hover:-translate-y-0.5"
+        >
+          <Search className="w-5 h-5" />
+          Déjà inscrit ? Vérifier mon recensement
+        </Link>
+      </div>
+
+      <div className="bg-blue-50 p-8 rounded-3xl border border-blue-100 mt-16 max-w-2xl mx-auto animate-fade-in-up delay-500">
         <p className="text-blue-800 text-sm italic">
           "Que tout se fasse avec décence et avec ordre." - 1 Corinthiens 14:40
         </p>
