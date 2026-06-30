@@ -1011,7 +1011,7 @@ export default function ParametresPage() {
 
       <ConfirmModal 
         isOpen={deleteModal.isOpen}
-        title={
+        title={`Supprimer ${
           deleteModal.type === 'region' 
             ? 'la région' 
             : deleteModal.type === 'sous-region' 
@@ -1019,7 +1019,7 @@ export default function ParametresPage() {
               : deleteModal.type === 'groupe' 
                 ? 'le groupe' 
                 : 'l\'administrateur'
-        }
+        }`}
         description={`Êtes-vous sûr de vouloir supprimer "${deleteModal.name}" ? Cette action est irréversible.`}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModal({isOpen: false, type: null, id: null, name: null})}

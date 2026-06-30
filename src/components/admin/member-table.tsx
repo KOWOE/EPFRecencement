@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Filter, Search, ChevronDown, Calendar, MoreHorizontal, Edit, Trash2, Loader2, X, Users, Music, Phone, Mail, MapPin } from "lucide-react"
+import { Plus, Filter, Search, ChevronDown, Calendar, MoreHorizontal, Edit, Trash2, Loader2, X, Users, Music, Phone, Mail, MapPin, Flame } from "lucide-react"
 import { CustomSelect } from "@/components/ui/custom-select"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { getMembers, deleteMember, updateMember } from "@/lib/actions/member"
@@ -154,7 +154,7 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
       {/* Overview Stats */}
       {showStats && (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
             {/* Card Total */}
             <div 
               onClick={() => setSelectedGroup("")}
@@ -251,6 +251,31 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
                   selectedGroup === "GROUPE_MUSICAL" ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-blue-50 text-blue-600"
                 )}>
                   <MicCableIcon className="w-7 h-7" />
+                </div>
+              </div>
+            </div>
+
+            {/* Card Jeunesse */}
+            <div 
+              onClick={() => setSelectedGroup("JEUNESSE")}
+              className={cn(
+                "p-6 bg-white rounded-[1.25rem] border cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative overflow-hidden group",
+                selectedGroup === "JEUNESSE" ? "border-amber-500 ring-1 ring-amber-500 shadow-md" : "border-slate-100 shadow-sm"
+              )}
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-50 to-transparent opacity-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+              <div className="relative flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Jeunesse</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">{stats.jeunesse}</h3>
+                  </div>
+                </div>
+                <div className={cn(
+                  "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-3",
+                  selectedGroup === "JEUNESSE" ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20" : "bg-amber-50 text-amber-500"
+                )}>
+                  <Flame className="w-7 h-7" />
                 </div>
               </div>
             </div>
