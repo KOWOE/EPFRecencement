@@ -246,13 +246,21 @@ export async function getAdmins() {
     if (admins.length === 0) {
       // Seed default admins
       const seedAdmins = [
-        { nom: "Admin EPF", email: "admin@epf-recensement.ci", role: "Super Admin" },
-        { nom: "Secrétariat EPF", email: "secretariat@epf-recensement.ci", role: "Éditeur" }
+        { nom: "Admin EPF", email: "admin@epf-recensement.ci", role: "Super Admin", pwd: "recensement2026" },
+        { nom: "Secrétariat EPF", email: "secretariat@epf-recensement.ci", role: "Éditeur", pwd: "recensement2026" }
       ]
       
       for (const sa of seedAdmins) {
+        // Create in Supabase first
+        await getSupabaseAdmin().auth.admin.createUser({
+          email: sa.email,
+          password: sa.pwd,
+          email_confirm: true,
+          user_metadata: { role: sa.role, nom: sa.nom }
+        }).catch(() => {})
+
         await prisma.admin.create({
-          data: { ...sa, password: "recensement2026" }
+          data: { nom: sa.nom, email: sa.email, role: sa.role, password: sa.pwd }
         }).catch(() => {})
       }
       
@@ -370,29 +378,48 @@ export async function loginAdmin(email: string, mdp?: string) {
       return { success: false as const, error: "Configuration serveur incomplète. Contactez l'administrateur." }
     }
 
+    const admin = await prisma.admin.findUnique({
+      where: { email: email.trim().toLowerCase() }
+    })
+    
+    if (!admin) {
+      return { success: false as const, error: "Ce compte n'a pas accès à l'administration." }
+    }
+
     const supabase = await createClient()
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    let { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password: mdp || ""
     })
+
+    // Auto-migration: If Supabase fails but password matches Prisma DB exactly
+    if (authError && admin.password === (mdp || "")) {
+      // Try to create the user in Supabase Auth
+      const { error: createError } = await getSupabaseAdmin().auth.admin.createUser({
+        email: email.trim().toLowerCase(),
+        password: mdp || "",
+        email_confirm: true,
+        user_metadata: { role: admin.role, nom: admin.nom }
+      })
+      
+      if (!createError) {
+        // Retry login
+        const retry = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password: mdp || ""
+        })
+        authData = retry.data
+        authError = retry.error
+      }
+    }
 
     if (authError) {
       console.error("Supabase Auth Error:", authError.message)
       return { success: false as const, error: "Email ou mot de passe incorrect." }
     }
     
-    if (!authData.user) {
+    if (!authData?.user) {
       return { success: false as const, error: "Email ou mot de passe incorrect." }
-    }
-
-    // Récupérer le rôle et nom depuis Prisma pour la cohérence UI
-    const admin = await prisma.admin.findUnique({
-      where: { email: email.trim().toLowerCase() }
-    })
-    
-    if (!admin) {
-      // Cas rare où l'utilisateur est dans Auth mais pas dans Prisma
-      return { success: false as const, error: "Ce compte n'a pas accès à l'administration." }
     }
 
     return {
