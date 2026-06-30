@@ -233,6 +233,8 @@ export async function toggleMaintenanceMode(value: boolean) {
     
     await logActivity("SETTINGS", `Mode maintenance ${value ? 'activé' : 'désactivé'}`)
     
+    revalidatePath("/", "layout")
+    
     return { success: true }
   } catch (error) {
     console.error("Toggle maintenance error", error)
