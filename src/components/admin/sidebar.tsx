@@ -10,7 +10,6 @@ import {
   FileSpreadsheet,
   X,
   LogOut,
-  LogOut,
   History,
   Music,
   Drum,
