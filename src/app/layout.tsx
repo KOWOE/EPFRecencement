@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { ToastProvider } from "@/context/toast-context";
-
+import { MouseFollower } from "@/components/ui/mouse-follower";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +29,8 @@ export default function RootLayout({
       lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col relative">
+        <MouseFollower />
         <ToastProvider>
           {children}
         </ToastProvider>
