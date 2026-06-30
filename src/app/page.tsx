@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   FileSpreadsheet,
   FileSignature,
-  X
+  X,
+  Flame
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -177,6 +178,15 @@ const groups = [
     color: "bg-indigo-600 text-indigo-600 border-indigo-100 hover:border-indigo-300 hover:shadow-indigo-100/50",
     glowColor: "from-indigo-500/10 to-transparent",
     href: "/recensement/groupe-musical"
+  },
+  {
+    id: "jeunesse",
+    name: "Jeunesse",
+    description: "Recensement spécifique des jeunes pour dynamiser nos projets et activités spirituelles.",
+    icon: Flame,
+    color: "bg-amber-600 text-amber-600 border-amber-100 hover:border-amber-300 hover:shadow-amber-100/50",
+    glowColor: "from-amber-500/10 to-transparent",
+    href: "/recensement/jeunesse"
   }
 ]
 
@@ -469,7 +479,7 @@ export default function RootPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
             {groups.map((group, idx) => (
               <Link 
                 key={group.id} 
