@@ -2,26 +2,9 @@
 
 import { StatCard } from "@/components/admin/stat-card"
 import { MemberTable } from "@/components/admin/member-table"
-import { Users, Mic, FlameIcon as Flame } from "lucide-react"
+import { Users, Music, Flame, Drum } from "lucide-react"
 import { useEffect, useState } from "react"
 import { getDashboardStats } from "@/lib/actions/member"
-
-function FlameIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-    </svg>
-  )
-}
 
 function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -35,38 +18,14 @@ function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M18 8c1.5 0 3 .5 3 2.5v3c0 2-1.5 2.5-3 2.5" />
-      <path d="M21 9v6" />
-      <path d="M3 13h15" />
-      <path d="M3 11h11c1 0 2 .5 2 1.5s-1 1.5-2 1.5H8" />
-      <path d="M9 11V7" />
-      <circle cx="9" cy="6" r="1" />
-      <path d="M12 11V7" />
-      <circle cx="12" cy="6" r="1" />
-      <path d="M15 11V7" />
-      <circle cx="15" cy="6" r="1" />
-      <path d="M2 10.5v3" />
-    </svg>
-  )
-}
-
-function MicCableIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <line x1="9" y1="15" x2="15" y2="9" />
-      <path d="M10 16.5L6.5 20c-.8.8-2 .8-2.8 0s-.8-2 0-2.8l3.5-3.5" />
-      <path d="M13 11l3-3a3 3 0 0 1 4.2 4.2l-3 3" />
-      <path d="M14.5 9.5l2.5 2.5" />
-      <path d="M5.5 19.5c-1 1.5-2 2-3 1s-.5-2.5.8-3.7c1.8-1.8 3.5-1.8 5.3-.5 1.8 1.3 3.5 1.3 5.3 0c1.2-1 2.2-.8 3 .5" />
+      <path d="M3 12h10" />
+      <path d="M13 12c0-3 3-4 6-4 1.5 0 3 1.5 3 4s-1.5 4-3 4c-3 0-6-1-6-4" />
+      <path d="M11 12v4a2 2 0 0 1-4 0v-4" />
+      <path d="M7 12V8" />
+      <path d="M9 12V8" />
+      <path d="M11 12V8" />
+      <path d="M1.5 10v4" />
+      <path d="M1.5 12H3" />
     </svg>
   )
 }
@@ -141,7 +100,7 @@ export default function DashboardPage() {
               title="Choristes" 
               value={stats.chorale} 
               trend={`${stats.total > 0 ? Math.round((stats.chorale / stats.total) * 100) : 0}% du total`}
-              icon={Mic}
+              icon={Music}
               className="animate-fade-in-up delay-150"
             />
             <StatCard 
@@ -155,14 +114,14 @@ export default function DashboardPage() {
               title="Groupe Musical" 
               value={stats.musical} 
               trend={`${stats.total > 0 ? Math.round((stats.musical / stats.total) * 100) : 0}% du total`}
-              icon={MicCableIcon}
+              icon={Drum}
               className="animate-fade-in-up delay-300"
             />
             <StatCard 
               title="Jeunesse" 
               value={stats.jeunesse} 
               trend={`${stats.total > 0 ? Math.round((stats.jeunesse / stats.total) * 100) : 0}% du total`}
-              icon={FlameIcon}
+              icon={Flame}
               className="animate-fade-in-up delay-375"
             />
           </>

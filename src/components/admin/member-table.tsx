@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Filter, Search, ChevronDown, Calendar, MoreHorizontal, Edit, Trash2, Loader2, X, Users, Music, Phone, Mail, MapPin, Flame } from "lucide-react"
+import { Plus, Filter, Search, ChevronDown, Calendar, MoreHorizontal, Edit, Trash2, Loader2, X, Users, Music, Phone, Mail, MapPin, Flame, Drum } from "lucide-react"
 import { CustomSelect } from "@/components/ui/custom-select"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { getMembers, deleteMember, updateMember } from "@/lib/actions/member"
@@ -22,47 +22,14 @@ function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
       {...props}
     >
-      {/* Tilted main leadpipe */}
-      <line x1="4" y1="20" x2="16" y2="8" />
-      {/* Mouthpiece */}
-      <path d="M3 21l1.5-1.5M2 22a1 1 0 0 0 1.4-1.4" />
-      {/* Tubing loop at the bottom */}
-      <path d="M7 17c-1.5-1.5-1.5-3 0-4.5s3-1.5 4.5 0" />
-      {/* Perpendicular parallel valves */}
-      <line x1="10" y1="12" x2="8" y2="10" />
-      <circle cx="7.5" cy="9.5" r="0.75" fill="currentColor" />
-      
-      <line x1="11.5" y1="10.5" x2="9.5" y2="8.5" />
-      <circle cx="9" cy="8" r="0.75" fill="currentColor" />
-      
-      <line x1="13" y1="9" x2="11" y2="7" />
-      <circle cx="10.5" cy="6.5" r="0.75" fill="currentColor" />
-      
-      {/* Bell shape at top right */}
-      <path d="M14 10c2.5-3.5 5.5-6.5 8-7" />
-      <path d="M16 12c3.5-2.5 6.5-5.5 7-8" />
-      <path d="M22 3c1 1-6 7-7 8" />
-    </svg>
-  )
-}
-
-function MicCableIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <line x1="9" y1="15" x2="15" y2="9" />
-      <path d="M10 16.5L6.5 20c-.8.8-2 .8-2.8 0s-.8-2 0-2.8l3.5-3.5" />
-      <path d="M13 11l3-3a3 3 0 0 1 4.2 4.2l-3 3" />
-      <path d="M14.5 9.5l2.5 2.5" />
-      <path d="M5.5 19.5c-1 1.5-2 2-3 1s-.5-2.5.8-3.7c1.8-1.8 3.5-1.8 5.3-.5 1.8 1.3 3.5 1.3 5.3 0c1.2-1 2.2-.8 3 .5" />
+      <path d="M3 12h10" />
+      <path d="M13 12c0-3 3-4 6-4 1.5 0 3 1.5 3 4s-1.5 4-3 4c-3 0-6-1-6-4" />
+      <path d="M11 12v4a2 2 0 0 1-4 0v-4" />
+      <path d="M7 12V8" />
+      <path d="M9 12V8" />
+      <path d="M11 12V8" />
+      <path d="M1.5 10v4" />
+      <path d="M1.5 12H3" />
     </svg>
   )
 }
@@ -250,7 +217,7 @@ export function MemberTable({ showStats = false, defaultGroup = "" }: MemberTabl
                   "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-3",
                   selectedGroup === "GROUPE_MUSICAL" ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "bg-blue-50 text-blue-600"
                 )}>
-                  <MicCableIcon className="w-7 h-7" />
+                  <Drum className="w-7 h-7" />
                 </div>
               </div>
             </div>

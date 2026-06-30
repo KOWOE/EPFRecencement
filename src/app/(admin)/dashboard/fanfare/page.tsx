@@ -12,26 +12,14 @@ function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
       strokeLinejoin="round"
       {...props}
     >
-      {/* Tilted main leadpipe */}
-      <line x1="4" y1="20" x2="16" y2="8" />
-      {/* Mouthpiece */}
-      <path d="M3 21l1.5-1.5M2 22a1 1 0 0 0 1.4-1.4" />
-      {/* Tubing loop at the bottom */}
-      <path d="M7 17c-1.5-1.5-1.5-3 0-4.5s3-1.5 4.5 0" />
-      {/* Perpendicular parallel valves */}
-      <line x1="10" y1="12" x2="8" y2="10" />
-      <circle cx="7.5" cy="9.5" r="0.75" fill="currentColor" />
-      
-      <line x1="11.5" y1="10.5" x2="9.5" y2="8.5" />
-      <circle cx="9" cy="8" r="0.75" fill="currentColor" />
-      
-      <line x1="13" y1="9" x2="11" y2="7" />
-      <circle cx="10.5" cy="6.5" r="0.75" fill="currentColor" />
-      
-      {/* Bell shape at top right */}
-      <path d="M14 10c2.5-3.5 5.5-6.5 8-7" />
-      <path d="M16 12c3.5-2.5 6.5-5.5 7-8" />
-      <path d="M22 3c1 1-6 7-7 8" />
+      <path d="M3 12h10" />
+      <path d="M13 12c0-3 3-4 6-4 1.5 0 3 1.5 3 4s-1.5 4-3 4c-3 0-6-1-6-4" />
+      <path d="M11 12v4a2 2 0 0 1-4 0v-4" />
+      <path d="M7 12V8" />
+      <path d="M9 12V8" />
+      <path d="M11 12V8" />
+      <path d="M1.5 10v4" />
+      <path d="M1.5 12H3" />
     </svg>
   )
 }

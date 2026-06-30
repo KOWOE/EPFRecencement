@@ -1,25 +1,6 @@
 import Link from "next/link"
 import React from "react"
-import { ArrowRight, Search, Drum } from "lucide-react"
-
-function CleDeSolIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M15.5 10.5A3.5 3.5 0 1 0 12 14v6.5a2.5 2.5 0 0 1-5 0c0-1.6 1.5-2.5 3-2.5h2" />
-      <path d="M12 14V3.5a1.5 1.5 0 0 1 3 0c0 2-3.5 3-3.5 7" />
-      <path d="M12 21.5V14" />
-    </svg>
-  )
-}
+import { ArrowRight, Search, Drum, Music } from "lucide-react"
 
 function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -67,7 +48,7 @@ const groups = [
     id: "chorale",
     name: "Chorale",
     description: "Recensement pour tous les membres des chorales locales et régionales.",
-    icon: CleDeSolIcon,
+    icon: Music,
     color: "bg-blue-600",
     href: "/recensement/chorale"
   },

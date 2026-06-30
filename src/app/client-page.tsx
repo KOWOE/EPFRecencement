@@ -25,24 +25,6 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-function CleDeSolIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M15.5 10.5A3.5 3.5 0 1 0 12 14v6.5a2.5 2.5 0 0 1-5 0c0-1.6 1.5-2.5 3-2.5h2" />
-      <path d="M12 14V3.5a1.5 1.5 0 0 1 3 0c0 2-3.5 3-3.5 7" />
-      <path d="M12 21.5V14" />
-    </svg>
-  )
-}
 
 function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -143,7 +125,7 @@ const groups = [
     id: "chorale",
     name: "Chorale",
     description: "Coordination nationale des voix pour une louange harmonisée dans toutes nos régions.",
-    icon: CleDeSolIcon,
+    icon: Music,
     color: "bg-blue-600 text-blue-600 border-blue-100 hover:border-blue-300 hover:shadow-blue-100/50",
     glowColor: "from-blue-500/10 to-transparent",
     href: "/recensement/chorale"
