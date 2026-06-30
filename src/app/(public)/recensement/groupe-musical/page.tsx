@@ -284,13 +284,13 @@ export default function GroupeMusicalFormPage() {
         </button>
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-start md:justify-center px-4 pt-12 md:pt-0 overflow-y-auto pb-24">
+      <div className="relative z-10 flex-1 flex flex-col items-center px-4 py-8 md:py-12 overflow-y-auto">
         
         <div className="absolute top-10 left-1/2 -translate-x-1/2 text-[10vw] font-bold text-slate-900/[0.02] whitespace-nowrap pointer-events-none select-none">
           Groupe Musical
         </div>
 
-        <div className="w-full max-w-2xl bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-indigo-900/5 border border-white/50 p-8 md:p-12 relative">
+        <div className="my-auto shrink-0 w-full max-w-2xl bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-indigo-900/5 border border-white/50 p-5 sm:p-8 md:p-12 relative">
           
           {error && (
             <div className="mb-6 p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-xl text-sm font-medium">
