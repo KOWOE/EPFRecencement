@@ -62,15 +62,28 @@ export default function ChoraleFormPage() {
         setRegionsList(reg.data.map(r => ({ value: r.name, label: r.name })))
       } else {
         setRegionsList([
-          { value: "Abidjan", label: "Abidjan" },
-          { value: "Bouaké", label: "Bouaké" },
-          { value: "Yamoussoukro", label: "Yamoussoukro" },
-          { value: "Korhogo", label: "Korhogo" },
-          { value: "Daloa", label: "Daloa" },
-          { value: "San-Pédro", label: "San-Pédro" },
-          { value: "Man", label: "Man" },
-          { value: "Gagnoa", label: "Gagnoa" },
-          { value: "Autre", label: "Autre" }
+          { value: "Cotonou 1", label: "Cotonou 1" },
+          { value: "Cotonou 2", label: "Cotonou 2" },
+          { value: "Cotonou 3", label: "Cotonou 3" },
+          { value: "Dogbo Tota", label: "Dogbo Tota" },
+          { value: "Dogbo Ahomey", label: "Dogbo Ahomey" },
+          { value: "Dogbo Honton", label: "Dogbo Honton" },
+          { value: "Azovè", label: "Azovè" },
+          { value: "Atomey", label: "Atomey" },
+          { value: "Lalo", label: "Lalo" },
+          { value: "Toviklin", label: "Toviklin" },
+          { value: "Klouékanmey", label: "Klouékanmey" },
+          { value: "Djoto", label: "Djoto" },
+          { value: "Comè", label: "Comè" },
+          { value: "Lokosa", label: "Lokosa" },
+          { value: "Bohicon", label: "Bohicon" },
+          { value: "Dassa", label: "Dassa" },
+          { value: "Banikouara", label: "Banikouara" },
+          { value: "Tchaourou", label: "Tchaourou" },
+          { value: "Parakou", label: "Parakou" },
+          { value: "Natitingou", label: "Natitingou" },
+          { value: "Kétou", label: "Kétou" },
+          { value: "Porto-Novo", label: "Porto-Novo" }
         ])
       }
     }
