@@ -71,9 +71,25 @@ model Admin {
   id        String   @id @default(cuid())
   nom       String
   email     String   @unique
-  role      String   // "Super Admin" | "Éditeur"
+  role      String   // "Super Admin" | "Admin" | "Éditeur"
   password  String   @default("recensement2026")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+model SystemSettings {
+  id                 String   @id @default("global")
+  maintenanceMode    Boolean  @default(false)
+  publicRegistration Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  adminName   String
+  adminRole   String
+  actionType  String   // "CREATE", "UPDATE", "DELETE", "EXPORT", "SETTINGS"
+  description String
+  createdAt   DateTime @default(now())
+}

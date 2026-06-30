@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { CustomSelect } from "@/components/ui/custom-select"
-import { getRegions, addRegion, deleteRegion, getSousRegions, addSousRegion, deleteSousRegion, getGroupes, addGroupe, deleteGroupe, getAdmins, addAdmin, deleteAdmin } from "@/lib/actions/parametres"
+import { getRegions, addRegion, deleteRegion, getSousRegions, addSousRegion, deleteSousRegion, getGroupes, addGroupe, deleteGroupe, getAdmins, addAdmin, deleteAdmin, getMaintenanceMode, toggleMaintenanceMode } from "@/lib/actions/parametres"
 import { useToast } from "@/context/toast-context"
 
 export default function ParametresPage() {
@@ -72,9 +72,6 @@ export default function ParametresPage() {
     const storedMfa = localStorage.getItem("setting_requireMfa")
     if (storedMfa !== null) setRequireMfa(storedMfa === "true")
     
-    const storedMaintenance = localStorage.getItem("setting_maintenanceMode")
-    if (storedMaintenance !== null) setMaintenanceMode(storedMaintenance === "true")
-    
     const storedEmailAlerts = localStorage.getItem("setting_emailAlerts")
     if (storedEmailAlerts !== null) setEmailAlerts(storedEmailAlerts === "true")
     
@@ -111,10 +108,17 @@ export default function ParametresPage() {
     localStorage.setItem("setting_requireMfa", String(nextVal))
   }
 
-  const toggleMaintenance = () => {
+  const toggleMaintenance = async () => {
     const nextVal = !maintenanceMode
     setMaintenanceMode(nextVal)
-    localStorage.setItem("setting_maintenanceMode", String(nextVal))
+    
+    const res = await toggleMaintenanceMode(nextVal)
+    if (res.success) {
+      showToast(`Mode maintenance ${nextVal ? 'activé' : 'désactivé'} !`, "success")
+    } else {
+      setMaintenanceMode(!nextVal)
+      showAlertDialog("Erreur", res.error || "Erreur lors de la modification", "error")
+    }
   }
 
   const toggleEmailAlerts = () => {
@@ -156,13 +160,14 @@ export default function ParametresPage() {
   const loadData = async () => {
     setIsLoadingData(true)
     try {
-      const [regRes, sousRegRes, grpRes, admRes] = await Promise.all([
-        getRegions(), getSousRegions(), getGroupes(), getAdmins()
+      const [regRes, sousRegRes, grpRes, admRes, maintRes] = await Promise.all([
+        getRegions(), getSousRegions(), getGroupes(), getAdmins(), getMaintenanceMode()
       ])
       if (regRes.success && regRes.data) setRegions(regRes.data)
       if (sousRegRes.success && sousRegRes.data) setSousRegions(sousRegRes.data)
       if (grpRes.success && grpRes.data) setGroupes(grpRes.data)
       if (admRes.success && admRes.data) setAdmins(admRes.data)
+      if (maintRes.success) setMaintenanceMode(maintRes.maintenanceMode)
     } finally {
       setIsLoadingData(false)
     }
@@ -738,8 +743,9 @@ export default function ParametresPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-fade-in-up">
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              {profileRole === "Super Admin" && (
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-fade-in-up">
+                  <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                   <div>
                     <h3 className="font-bold text-slate-900 text-lg">Administrateurs du Système</h3>
                     <p className="text-sm text-slate-500 mt-1">Liste des comptes disposant d'un accès administratif.</p>
@@ -794,7 +800,8 @@ export default function ParametresPage() {
                     })
                   )}
                 </div>
-              </div>
+                </div>
+              )}
             </div>
           )}
 

@@ -19,7 +19,7 @@ export async function getAdminProfile() {
       where: { email: user.email?.toLowerCase() }
     })
     if (!admin) return { success: false, error: "Administrateur non trouvé" }
-    return { success: true, data: { nom: admin.nom, email: admin.email, role: admin.role } }
+    return { success: true, data: { id: admin.id, nom: admin.nom, email: admin.email, role: admin.role } }
   } catch (error) {
     return { success: false, error: "Erreur serveur de connexion." }
   }
@@ -174,7 +174,61 @@ export async function deleteGroupe(id: string) {
     return { success: true as const }
   } catch (error: any) {
     console.error("Error deleting groupe:", error?.message || error)
-    return { success: false as const, error: `Erreur lors de la suppression du groupe : ${error?.message || String(error)}` }
+    return { success: false as const, error: "Erreur lors de la suppression du groupe." }
+  }
+}
+
+// ----------------- SYSTEM SETTINGS (MAINTENANCE) -----------------
+
+export async function getMaintenanceMode() {
+  try {
+    const settings = await prisma.systemSettings.findUnique({ where: { id: "global" } })
+    return { success: true, maintenanceMode: settings?.maintenanceMode ?? false }
+  } catch (error) {
+    return { success: false, error: "Erreur lors de la lecture des paramètres." }
+  }
+}
+
+export async function toggleMaintenanceMode(value: boolean) {
+  try {
+    await prisma.systemSettings.upsert({
+      where: { id: "global" },
+      update: { maintenanceMode: value },
+      create: { id: "global", maintenanceMode: value }
+    })
+    
+    // Log the activity
+    const profileRes = await getAdminProfile()
+    if (profileRes.success && profileRes.data) {
+      await prisma.activityLog.create({
+        data: {
+          adminId: profileRes.data.id,
+          adminName: profileRes.data.nom,
+          adminRole: profileRes.data.role,
+          actionType: "SETTINGS",
+          description: `Mode maintenance ${value ? 'activé' : 'désactivé'}`
+        }
+      })
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error("Toggle maintenance error", error)
+    return { success: false, error: "Erreur lors de la modification du mode maintenance." }
+  }
+}
+
+export async function getActivityLogs() {
+  try {
+    await verifyAuth()
+    const logs = await prisma.activityLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100 // Fetch last 100 logs
+    })
+    return { success: true, data: logs }
+  } catch (error) {
+    console.error("Erreur getActivityLogs:", error)
+    return { success: false, error: "Impossible de récupérer l'historique." }
   }
 }
 

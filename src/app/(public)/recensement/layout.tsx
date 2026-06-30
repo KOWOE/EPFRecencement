@@ -1,8 +1,11 @@
 import prisma from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import RootClientPage from "./client-page"
 
-export default async function RootPage() {
+export default async function RecensementLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   let isMaintenance = false
   
   try {
@@ -11,12 +14,12 @@ export default async function RootPage() {
       isMaintenance = true
     }
   } catch (error) {
-    console.error("Database connection failed for settings:", error)
+    console.error("Database error checking maintenance:", error)
   }
 
   if (isMaintenance) {
     redirect('/maintenance')
   }
 
-  return <RootClientPage />
+  return <>{children}</>
 }

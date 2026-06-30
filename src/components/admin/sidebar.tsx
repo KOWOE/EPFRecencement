@@ -9,10 +9,11 @@ import {
   Mic,
   FileSpreadsheet,
   X,
-  LogOut
+  LogOut,
+  History
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { useToast } from "@/context/toast-context"
 import { logoutAdmin } from "@/lib/actions/parametres"
@@ -95,6 +96,7 @@ const sidebarItems = [
   { name: "Groupe Musical", href: "/dashboard/groupe-musical", icon: MicCableIcon },
   { name: "Jeunesse", href: "/dashboard/jeunesse", icon: FlameIcon },
   { name: "Imports & Exports", href: "/dashboard/imports-exports", icon: FileSpreadsheet },
+  { name: "Historique", href: "/dashboard/historique", icon: History },
 ]
 
 interface SidebarProps {
@@ -107,6 +109,13 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
   const router = useRouter()
   const { showToast } = useToast()
   const [isLogoutOpen, setIsLogoutOpen] = useState(false)
+  const [adminRole, setAdminRole] = useState<string>("Éditeur")
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setAdminRole(localStorage.getItem("admin_role") || "Éditeur")
+    }
+  }, [])
 
   const confirmLogout = async () => {
     setIsLogoutOpen(false)
@@ -152,6 +161,9 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
       
       <nav className="flex-1 px-4 py-4 space-y-1">
         {sidebarItems.map((item) => {
+          if (item.name === "Historique" && adminRole !== "Super Admin") return null;
+          if (item.name === "Imports & Exports" && adminRole === "Éditeur") return null;
+
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
           return (
             <Link
@@ -173,19 +185,21 @@ export function Sidebar({ onClose, isMobile }: SidebarProps) {
       </nav>
  
       <div className="p-4 border-t border-white/10 space-y-1">
-        <Link 
-          href="/dashboard/parametres"
-          onClick={onClose}
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
-            pathname === "/dashboard/parametres" 
-              ? "bg-[#0056D2] text-white shadow-lg shadow-blue-900/20" 
-              : "text-white/70 hover:text-white hover:bg-white/5"
-          )}
-        >
-          <Settings className={cn("w-5 h-5", pathname === "/dashboard/parametres" ? "text-white" : "text-white/40")} />
-          Paramètres
-        </Link>
+        {adminRole !== "Éditeur" && (
+          <Link 
+            href="/dashboard/parametres"
+            onClick={onClose}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+              pathname === "/dashboard/parametres" 
+                ? "bg-[#0056D2] text-white shadow-lg shadow-blue-900/20" 
+                : "text-white/70 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <Settings className={cn("w-5 h-5", pathname === "/dashboard/parametres" ? "text-white" : "text-white/40")} />
+            Paramètres
+          </Link>
+        )}
 
         <button 
           type="button"

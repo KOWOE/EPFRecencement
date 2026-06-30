@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import * as ExcelJS from "exceljs"
 import { createClient } from "@/lib/supabase/server"
+import { getAdminProfile } from "@/lib/actions/parametres"
 
 async function verifyAuth() {
   const supabase = await createClient()
@@ -103,6 +104,23 @@ export async function getMembers() {
 export async function deleteMember(id: string) {
   try {
     await verifyAuth()
+    
+    const member = await prisma.member.findUnique({ where: { id } })
+    if (member) {
+      const profileRes = await getAdminProfile()
+      if (profileRes.success && profileRes.data) {
+        await prisma.activityLog.create({
+          data: {
+            adminId: profileRes.data.id,
+            adminName: profileRes.data.nom,
+            adminRole: profileRes.data.role,
+            actionType: "DELETE",
+            description: `Suppression du membre ${member.nom} ${member.prenom}`
+          }
+        })
+      }
+    }
+
     await prisma.member.delete({
       where: { id }
     })
@@ -134,6 +152,19 @@ export async function updateMember(id: string, formData: FormData) {
       where: { id },
       data: validatedData as any,
     })
+
+    const profileRes = await getAdminProfile()
+    if (profileRes.success && profileRes.data) {
+      await prisma.activityLog.create({
+        data: {
+          adminId: profileRes.data.id,
+          adminName: profileRes.data.nom,
+          adminRole: profileRes.data.role,
+          actionType: "UPDATE",
+          description: `Modification du membre ${member.nom} ${member.prenom}`
+        }
+      })
+    }
 
     revalidatePath("/dashboard")
     revalidatePath("/dashboard/membres")
@@ -168,6 +199,11 @@ function getNormalizedValue(obj: any, targetKeys: string[]): any {
 export async function importMembers(formData: FormData) {
   try {
     await verifyAuth()
+    const profileRes = await getAdminProfile()
+    if (profileRes.success && profileRes.data?.role === "Éditeur") {
+      return { success: false, error: "Vous n'avez pas les droits pour importer des membres." }
+    }
+
     const file = formData.get("file") as File
     if (!file) {
       return { success: false, error: "Fichier manquant" }
@@ -281,6 +317,18 @@ export async function importMembers(formData: FormData) {
       importedCount++
     }
 
+    if (profileRes.success && profileRes.data) {
+      await prisma.activityLog.create({
+        data: {
+          adminId: profileRes.data.id,
+          adminName: profileRes.data.nom,
+          adminRole: profileRes.data.role,
+          actionType: "CREATE",
+          description: `Importation de ${importedCount} membre(s)`
+        }
+      })
+    }
+
     revalidatePath("/dashboard")
     revalidatePath("/dashboard/membres")
     return { success: true, count: importedCount }
@@ -325,6 +373,12 @@ export async function exportMembers(
 ) {
   try {
     await verifyAuth()
+    
+    const profileRes = await getAdminProfile()
+    if (profileRes.success && profileRes.data?.role === "Éditeur") {
+      return { success: false, error: "Vous n'avez pas les droits pour exporter des membres." }
+    }
+
     const where: any = {}
     if (filters.groupType) {
       where.group_type = filters.groupType
