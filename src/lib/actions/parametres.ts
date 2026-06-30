@@ -79,10 +79,11 @@ export async function addRegion(name: string) {
     await logActivity("CREATE", `Ajout de la région ${region.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const, data: { id: region.id, name: region.name } }
-  } catch (error: any) {
-    console.error("Error adding region:", error?.message || error)
-    if (error?.code === 'P2002') return { success: false as const, error: "Cette région existe déjà" }
-    return { success: false as const, error: `Erreur lors de l'ajout de la région : ${error?.message || String(error)}` }
+  } catch (error) {
+    const err = error as Error & { code?: string }
+    console.error("Error adding region:", err.message || err)
+    if (err.code === 'P2002') return { success: false as const, error: "Cette région existe déjà" }
+    return { success: false as const, error: `Erreur lors de l'ajout de la région : ${err.message || String(err)}` }
   }
 }
 
@@ -96,9 +97,10 @@ export async function deleteRegion(id: string) {
     if (region) await logActivity("DELETE", `Suppression de la région ${region.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const }
-  } catch (error: any) {
-    console.error("Error deleting region:", error?.message || error)
-    return { success: false as const, error: `Erreur lors de la suppression de la région : ${error?.message || String(error)}` }
+  } catch (error) {
+    const err = error as Error
+    console.error("Error deleting region:", err.message || err)
+    return { success: false as const, error: `Erreur lors de la suppression de la région : ${err.message || String(err)}` }
   }
 }
 
@@ -131,10 +133,11 @@ export async function addSousRegion(name: string) {
     await logActivity("CREATE", `Ajout de la sous-région ${sousRegion.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const, data: { id: sousRegion.id, name: sousRegion.name } }
-  } catch (error: any) {
-    console.error("Error adding sous-region:", error?.message || error)
-    if (error?.code === 'P2002') return { success: false as const, error: "Cette sous-région existe déjà" }
-    return { success: false as const, error: `Erreur lors de l'ajout de la sous-région : ${error?.message || String(error)}` }
+  } catch (error) {
+    const err = error as Error & { code?: string }
+    console.error("Error adding sous-region:", err.message || err)
+    if (err.code === 'P2002') return { success: false as const, error: "Cette sous-région existe déjà" }
+    return { success: false as const, error: `Erreur lors de l'ajout de la sous-région : ${err.message || String(err)}` }
   }
 }
 
@@ -148,9 +151,10 @@ export async function deleteSousRegion(id: string) {
     if (sousRegion) await logActivity("DELETE", `Suppression de la sous-région ${sousRegion.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const }
-  } catch (error: any) {
-    console.error("Error deleting sous-region:", error?.message || error)
-    return { success: false as const, error: `Erreur lors de la suppression de la sous-région : ${error?.message || String(error)}` }
+  } catch (error) {
+    const err = error as Error
+    console.error("Error deleting sous-region:", err.message || err)
+    return { success: false as const, error: `Erreur lors de la suppression de la sous-région : ${err.message || String(err)}` }
   }
 }
 
@@ -183,10 +187,11 @@ export async function addGroupe(name: string) {
     await logActivity("CREATE", `Ajout du groupe ${groupe.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const, data: { id: groupe.id, name: groupe.name } }
-  } catch (error: any) {
-    console.error("Error adding groupe:", error?.message || error)
-    if (error?.code === 'P2002') return { success: false as const, error: "Ce groupe existe déjà" }
-    return { success: false as const, error: `Erreur lors de l'ajout du groupe : ${error?.message || String(error)}` }
+  } catch (error) {
+    const err = error as Error & { code?: string }
+    console.error("Error adding groupe:", err.message || err)
+    if (err.code === 'P2002') return { success: false as const, error: "Ce groupe existe déjà" }
+    return { success: false as const, error: `Erreur lors de l'ajout du groupe : ${err.message || String(err)}` }
   }
 }
 
@@ -200,8 +205,9 @@ export async function deleteGroupe(id: string) {
     if (groupe) await logActivity("DELETE", `Suppression du groupe ${groupe.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const }
-  } catch (error: any) {
-    console.error("Error deleting groupe:", error?.message || error)
+  } catch (error) {
+    const err = error as Error
+    console.error("Error deleting groupe:", err.message || err)
     return { success: false as const, error: "Erreur lors de la suppression du groupe." }
   }
 }
@@ -292,9 +298,10 @@ export async function getAdmins() {
     }))
     
     return { success: true as const, data: serializedAdmins }
-  } catch (error: any) {
-    console.error("Error fetching admins:", error?.message || error)
-    return { success: false as const, error: `Erreur lors de la récupération des administrateurs : ${error?.message || String(error)}` }
+  } catch (error) {
+    const err = error as Error
+    console.error("Error fetching admins:", err.message || err)
+    return { success: false as const, error: `Erreur lors de la récupération des administrateurs : ${err.message || String(err)}` }
   }
 }
 
@@ -341,10 +348,11 @@ export async function addAdmin(nom: string, email: string, role: string, passwor
         updatedAt: admin.updatedAt.toISOString()
       }
     }
-  } catch (error: any) {
-    console.error("Error adding admin:", error?.message || error)
-    if (error?.code === 'P2002') return { success: false as const, error: "Cet email est déjà utilisé par un autre administrateur" }
-    return { success: false as const, error: `Erreur lors de l'ajout de l'administrateur : ${error?.message || String(error)}` }
+  } catch (error) {
+    const err = error as Error & { code?: string }
+    console.error("Error adding admin:", err.message || err)
+    if (err.code === 'P2002') return { success: false as const, error: "Cet email est déjà utilisé par un autre administrateur" }
+    return { success: false as const, error: `Erreur lors de l'ajout de l'administrateur : ${err.message || String(err)}` }
   }
 }
 
@@ -379,9 +387,10 @@ export async function deleteAdmin(id: string) {
     if (adminToDelete) await logActivity("DELETE", `Suppression de l'administrateur ${adminToDelete.nom}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const }
-  } catch (error: any) {
-    console.error("Error deleting admin:", error?.message || error)
-    return { success: false as const, error: `Erreur lors de la suppression de l'administrateur : ${error?.message || String(error)}` }
+  } catch (error) {
+    const err = error as Error
+    console.error("Error deleting admin:", err.message || err)
+    return { success: false as const, error: `Erreur lors de la suppression de l'administrateur : ${err.message || String(err)}` }
   }
 }
 
@@ -449,8 +458,9 @@ export async function loginAdmin(email: string, mdp?: string) {
         role: admin.role
       }
     }
-  } catch (error: any) {
-    console.error("Error authenticating admin:", error?.message || error)
-    return { success: false as const, error: "Erreur de connexion : " + (error?.message || "Serveur indisponible") }
+  } catch (error) {
+    const err = error as Error
+    console.error("Error authenticating admin:", err.message || err)
+    return { success: false as const, error: "Erreur de connexion : " + (err.message || "Serveur indisponible") }
   }
 }

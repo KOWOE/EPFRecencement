@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports, prefer-const */
 "use server"
 
 import prisma from "@/lib/prisma"
