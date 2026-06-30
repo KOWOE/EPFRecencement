@@ -305,7 +305,7 @@ export default function JeunesseFormPage() {
                   <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none transition-all" placeholder="email@exemple.com" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700">Assemblée *</label>
+                  <label className="text-sm font-medium text-slate-700">Église / Assemblée *</label>
                   <input type="text" name="assemblee" value={formData.assemblee} onChange={handleInputChange} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-amber-500 outline-none transition-all" placeholder="Ex: Cocody" />
                 </div>
                 <div className="space-y-1.5">

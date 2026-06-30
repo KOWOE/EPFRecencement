@@ -17,6 +17,7 @@ interface CustomSelectProps {
   options: Option[]
   placeholder?: string
   searchable?: boolean
+  className?: string
   colorTheme?: "blue" | "emerald" | "indigo" | "slate" | "amber"
 }
 

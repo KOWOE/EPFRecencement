@@ -95,7 +95,7 @@ const groups = [
   },
   {
     id: "groupe-musical",
-    name: "Groupe Musical / Chantres",
+    name: "Groupe Musical",
     description: "Pour les musiciens d'accompagnement et les chantres de l'église.",
     icon: MicCableIcon,
     color: "bg-indigo-600",
@@ -126,18 +126,21 @@ export default function RecensementSelectionPage() {
           <Link 
             key={group.id} 
             href={group.href}
-            className="group bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-left flex flex-col h-full animate-fade-in-up"
+            className="group bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-left flex flex-col h-full animate-fade-in-up"
             style={{ animationDelay: `${225 + idx * 75}ms` }}
           >
-            <div className={`${group.color} w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform`}>
-              <group.icon className="w-8 h-8" />
+            <div className={`${group.color} w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-5 group-hover:scale-110 transition-transform shrink-0`}>
+              <group.icon className="w-7 h-7" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">{group.name}</h3>
-            <p className="text-slate-500 mb-8 flex-1 leading-relaxed">
+            <h3 className="text-xl font-bold text-slate-900 mb-3 leading-tight">{group.name}</h3>
+            <p className="text-slate-500 text-sm mb-6 leading-relaxed">
               {group.description}
             </p>
-            <div className="flex items-center text-blue-600 font-bold gap-2">
-              Remplir la fiche <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-100 text-blue-600 font-semibold text-sm">
+              <span>Remplir la fiche</span>
+              <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <ArrowRight className="w-4 h-4" />
+              </div>
             </div>
           </Link>
         ))}
