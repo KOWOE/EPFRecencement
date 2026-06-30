@@ -167,7 +167,7 @@ export default function ParametresPage() {
       if (sousRegRes.success && sousRegRes.data) setSousRegions(sousRegRes.data)
       if (grpRes.success && grpRes.data) setGroupes(grpRes.data)
       if (admRes.success && admRes.data) setAdmins(admRes.data)
-      if (maintRes.success) setMaintenanceMode(maintRes.maintenanceMode)
+      if (maintRes.success) setMaintenanceMode(maintRes.maintenanceMode ?? false)
     } finally {
       setIsLoadingData(false)
     }
