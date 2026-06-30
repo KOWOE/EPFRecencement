@@ -25,6 +25,25 @@ export async function getAdminProfile() {
   }
 }
 
+async function logActivity(actionType: string, description: string) {
+  try {
+    const profileRes = await getAdminProfile()
+    if (profileRes.success && profileRes.data) {
+      await prisma.activityLog.create({
+        data: {
+          adminId: profileRes.data.id,
+          adminName: profileRes.data.nom,
+          adminRole: profileRes.data.role,
+          actionType,
+          description
+        }
+      })
+    }
+  } catch (e) {
+    console.error("Error logging activity", e)
+  }
+}
+
 export async function logoutAdmin() {
   const supabase = await createClient()
   await supabase.auth.signOut()
@@ -57,6 +76,7 @@ export async function addRegion(name: string) {
       data: { name: name.trim() },
       select: { id: true, name: true }
     })
+    await logActivity("CREATE", `Ajout de la région ${region.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const, data: { id: region.id, name: region.name } }
   } catch (error: any) {
@@ -69,9 +89,11 @@ export async function addRegion(name: string) {
 export async function deleteRegion(id: string) {
   try {
     await verifyAuth()
+    const region = await prisma.region.findUnique({ where: { id } })
     await prisma.region.delete({
       where: { id }
     })
+    if (region) await logActivity("DELETE", `Suppression de la région ${region.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const }
   } catch (error: any) {
@@ -106,6 +128,7 @@ export async function addSousRegion(name: string) {
       data: { name: name.trim() },
       select: { id: true, name: true }
     })
+    await logActivity("CREATE", `Ajout de la sous-région ${sousRegion.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const, data: { id: sousRegion.id, name: sousRegion.name } }
   } catch (error: any) {
@@ -118,9 +141,11 @@ export async function addSousRegion(name: string) {
 export async function deleteSousRegion(id: string) {
   try {
     await verifyAuth()
+    const sousRegion = await prisma.sousRegion.findUnique({ where: { id } })
     await prisma.sousRegion.delete({
       where: { id }
     })
+    if (sousRegion) await logActivity("DELETE", `Suppression de la sous-région ${sousRegion.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const }
   } catch (error: any) {
@@ -155,6 +180,7 @@ export async function addGroupe(name: string) {
       data: { name: name.trim() },
       select: { id: true, name: true }
     })
+    await logActivity("CREATE", `Ajout du groupe ${groupe.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const, data: { id: groupe.id, name: groupe.name } }
   } catch (error: any) {
@@ -167,9 +193,11 @@ export async function addGroupe(name: string) {
 export async function deleteGroupe(id: string) {
   try {
     await verifyAuth()
+    const groupe = await prisma.groupe.findUnique({ where: { id } })
     await prisma.groupe.delete({
       where: { id }
     })
+    if (groupe) await logActivity("DELETE", `Suppression du groupe ${groupe.name}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const }
   } catch (error: any) {
@@ -197,19 +225,7 @@ export async function toggleMaintenanceMode(value: boolean) {
       create: { id: "global", maintenanceMode: value }
     })
     
-    // Log the activity
-    const profileRes = await getAdminProfile()
-    if (profileRes.success && profileRes.data) {
-      await prisma.activityLog.create({
-        data: {
-          adminId: profileRes.data.id,
-          adminName: profileRes.data.nom,
-          adminRole: profileRes.data.role,
-          actionType: "SETTINGS",
-          description: `Mode maintenance ${value ? 'activé' : 'désactivé'}`
-        }
-      })
-    }
+    await logActivity("SETTINGS", `Mode maintenance ${value ? 'activé' : 'désactivé'}`)
     
     return { success: true }
   } catch (error) {
@@ -312,6 +328,7 @@ export async function addAdmin(nom: string, email: string, role: string, passwor
         ...(password && password.trim() ? { password: password.trim() } : { password: "Recensement@2026" })
       }
     })
+    await logActivity("CREATE", `Ajout de l'administrateur ${admin.nom} (${admin.role})`)
     revalidatePath("/dashboard/parametres")
     return {
       success: true as const,
@@ -359,6 +376,7 @@ export async function deleteAdmin(id: string) {
     await prisma.admin.delete({
       where: { id }
     })
+    if (adminToDelete) await logActivity("DELETE", `Suppression de l'administrateur ${adminToDelete.nom}`)
     revalidatePath("/dashboard/parametres")
     return { success: true as const }
   } catch (error: any) {
