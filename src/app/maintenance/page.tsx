@@ -1,8 +1,15 @@
-"use client"
-
 import { Wrench, ShieldAlert } from "lucide-react"
+import { getMaintenanceMode } from "@/lib/actions/parametres"
+import { redirect } from "next/navigation"
 
-export default function MaintenancePage() {
+export const dynamic = 'force-dynamic'
+
+export default async function MaintenancePage() {
+  const modeRes = await getMaintenanceMode()
+  if (!modeRes.maintenanceMode) {
+    redirect('/recensement')
+  }
+
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Animated background elements */}
