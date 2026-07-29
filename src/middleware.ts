@@ -19,6 +19,14 @@ export async function middleware(request: NextRequest) {
       return supabaseResponse
     }
 
+    const isAuthRoute = request.nextUrl.pathname.startsWith('/connexion') || request.nextUrl.pathname.startsWith('/auth')
+    const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard')
+
+    // On sort immédiatement si la route n'a pas besoin de vérification
+    if (!isAuthRoute && !isDashboardRoute) {
+      return supabaseResponse
+    }
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -40,12 +48,11 @@ export async function middleware(request: NextRequest) {
       }
     )
 
+    // L'appel réseau vers Supabase peut être lent au démarrage, 
+    // d'où l'importance de ne le faire que sur les routes protégées
     const {
       data: { user },
     } = await supabase.auth.getUser()
-
-    const isAuthRoute = request.nextUrl.pathname.startsWith('/connexion') || request.nextUrl.pathname.startsWith('/auth')
-    const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard')
 
     // Redirection : si on n'est pas connecté et qu'on essaie d'accéder au dashboard
     if (!user && isDashboardRoute) {
@@ -76,6 +83,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    /*
+     * On cible uniquement les routes qui nécessitent une vérification d'authentification
+     * pour éviter d'invoquer le middleware inutilement sur les routes publiques
+     * et de causer des erreurs 504 GATEWAY_TIMEOUT sur Vercel.
+     */
+    '/dashboard/:path*',
+    '/connexion',
+    '/auth/:path*'
   ],
 }
