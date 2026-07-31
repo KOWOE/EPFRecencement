@@ -480,15 +480,15 @@ export default function RootPage() {
   }, [])
 
   return (
-    <div className="relative min-h-screen bg-slate-50/50 overflow-clip font-sans">
+    <div className="relative min-h-screen bg-slate-50/50 dark:bg-[#0F1117] overflow-clip font-sans transition-colors duration-500">
       
       {/* Background Decorative Textures & Glows */}
       <div className="absolute inset-0 bg-grid-pattern pointer-events-none z-0" />
       <div className="absolute inset-0 noise-overlay opacity-[0.015] pointer-events-none z-0" />
       
-      <div className="absolute top-[-10%] left-[-15%] w-[60%] h-[50%] rounded-full bg-blue-500/10 blur-[130px] pointer-events-none z-0" />
-      <div className="absolute top-[40%] right-[-15%] w-[50%] h-[60%] rounded-full bg-indigo-500/10 blur-[130px] pointer-events-none z-0" />
-      <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none z-0" />
+      <div className="absolute top-[-10%] left-[-15%] w-[60%] h-[50%] rounded-full bg-blue-500/10 dark:bg-blue-600/15 blur-[130px] pointer-events-none z-0 transition-colors duration-700" />
+      <div className="absolute top-[40%] right-[-15%] w-[50%] h-[60%] rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-[130px] pointer-events-none z-0 transition-colors duration-700" />
+      <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-emerald-500/5 dark:bg-emerald-600/10 blur-[120px] pointer-events-none z-0 transition-colors duration-700" />
 
       {/* Header/Navbar */}
       <nav className="sticky top-0 z-50 bg-white/70 dark:bg-[#0F1117]/80 backdrop-blur-xl border-b border-slate-100 dark:border-[#2E3341] transition-all duration-300">
@@ -510,14 +510,14 @@ export default function RootPage() {
         {/* Floating Icons for Visual Interest */}
         <div 
           onClick={() => playInteractiveNote("vocal")}
-          className="hidden lg:block absolute top-[20%] left-[8%] animate-float text-blue-400 opacity-60 hover:opacity-100 hover:scale-125 hover:rotate-12 active:scale-95 transition-all duration-300 cursor-pointer p-3 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-100/50 shadow-sm"
+          className="hidden lg:block absolute top-[20%] left-[8%] animate-float text-blue-400 opacity-60 hover:opacity-100 hover:scale-125 hover:rotate-12 active:scale-95 transition-all duration-300 cursor-pointer p-3 bg-white/50 dark:bg-white/[0.03] backdrop-blur-sm rounded-2xl border border-slate-100/50 dark:border-white/[0.05] shadow-sm"
           title="Cliquez pour chanter 🎵"
         >
           <Mic className="w-8 h-8" />
         </div>
         <div 
           onClick={() => playInteractiveNote("brass")}
-          className="hidden lg:block absolute top-[15%] right-[10%] animate-float-delayed text-indigo-400 opacity-60 hover:opacity-100 hover:scale-125 hover:-rotate-12 active:scale-95 transition-all duration-300 cursor-pointer p-3 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-100/50 shadow-sm"
+          className="hidden lg:block absolute top-[15%] right-[10%] animate-float-delayed text-indigo-400 opacity-60 hover:opacity-100 hover:scale-125 hover:-rotate-12 active:scale-95 transition-all duration-300 cursor-pointer p-3 bg-white/50 dark:bg-white/[0.03] backdrop-blur-sm rounded-2xl border border-slate-100/50 dark:border-white/[0.05] shadow-sm"
           title="Cliquez pour souffler 🎺"
         >
           <TrumpetIcon className="w-8 h-8" />
@@ -561,7 +561,7 @@ export default function RootPage() {
               key={idx}
               onClick={() => playInteractiveNote("stat")}
               className={cn(
-                "p-6 bg-white/70 dark:bg-[#1A1D27]/70 backdrop-blur-md rounded-2xl border border-slate-100 dark:border-[#2E3341] shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 flex items-center gap-4 group cursor-pointer reveal-zoom",
+                "p-6 bg-white/70 dark:bg-white/[0.03] backdrop-blur-md rounded-2xl border border-slate-100 dark:border-white/[0.08] shadow-sm dark:shadow-none hover:shadow-md dark:hover:bg-white/[0.06] transition-all duration-300 flex items-center gap-4 group cursor-pointer reveal-zoom",
                 idx === 0 ? "reveal-stagger-1" : idx === 1 ? "reveal-stagger-2" : "reveal-stagger-3"
               )}
             >
@@ -580,13 +580,13 @@ export default function RootPage() {
       </header>
 
       {/* Main Feature Cards */}
-      <section className="relative z-10 py-16 bg-white border-y border-slate-100">
+      <section className="relative z-10 py-16 bg-white dark:bg-[#0F1117] border-y border-slate-100 dark:border-white/[0.05]">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3 reveal">
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-[#F1F3F5] tracking-tight">
               Choisissez votre département
             </h2>
-            <p className="text-slate-500">
+            <p className="text-slate-500 dark:text-[#8B95A5]">
               Veuillez sélectionner le groupe musical auquel vous appartenez pour commencer à remplir votre fiche d'inscription.
             </p>
           </div>
@@ -602,25 +602,25 @@ export default function RootPage() {
                   else playInteractiveNote("synth")
                 }}
                 className={cn(
-                  "group relative bg-slate-50/50 p-8 rounded-3xl border border-slate-200/60 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-left flex flex-col h-full overflow-hidden reveal-zoom",
+                  "group relative bg-slate-50/50 dark:bg-white/[0.02] dark:backdrop-blur-xl p-8 rounded-3xl border border-slate-200/60 dark:border-white/[0.05] shadow-sm dark:shadow-none hover:shadow-xl dark:hover:bg-white/[0.05] dark:hover:border-white/[0.1] hover:-translate-y-2 transition-all duration-300 text-left flex flex-col h-full overflow-hidden reveal-zoom",
                   idx === 0 ? "reveal-stagger-1" : idx === 1 ? "reveal-stagger-2" : "reveal-stagger-3"
                 )}
               >
                 {/* Glow Effect */}
-                <div className={cn("absolute -right-16 -top-16 w-36 h-36 bg-gradient-to-br rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500", group.glowColor)} />
+                <div className={cn("absolute -right-16 -top-16 w-36 h-36 bg-gradient-to-br rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500 dark:opacity-40", group.glowColor)} />
 
                 <div className="relative">
-                  <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm mb-6 group-hover:scale-110 group-hover:shadow-md transition-all duration-300">
+                  <div className="w-14 h-14 rounded-2xl bg-white dark:bg-[#1A1D27] border border-slate-100 dark:border-white/[0.08] flex items-center justify-center shadow-sm mb-6 group-hover:scale-110 group-hover:shadow-md transition-all duration-300">
                     <group.icon className={cn("w-8 h-8", group.color.split(" ")[1])} />
                   </div>
                   
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">{group.name}</h3>
-                  <p className="text-slate-500 mb-8 leading-relaxed text-sm">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-[#F1F3F5] mb-3">{group.name}</h3>
+                  <p className="text-slate-500 dark:text-[#8B95A5] mb-8 leading-relaxed text-sm">
                     {group.description}
                   </p>
                 </div>
                 
-                <div className="mt-auto pt-4 flex items-center text-blue-600 font-bold gap-2 text-sm">
+                <div className="mt-auto pt-4 flex items-center text-blue-600 dark:text-blue-400 font-bold gap-2 text-sm">
                   <span>S'inscrire maintenant</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-300" />
                 </div>
