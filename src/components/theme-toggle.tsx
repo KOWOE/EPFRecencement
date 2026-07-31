@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
+import { cn } from "@/lib/utils"
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
@@ -11,10 +12,27 @@ export function ThemeToggle() {
   // Avoid hydration mismatch by waiting for mount
   React.useEffect(() => {
     setMounted(true)
-  }, [])
+    
+    // Auto-switch at sunset (18:00 to 06:00)
+    const checkSunset = () => {
+      const hour = new Date().getHours()
+      const isNight = hour >= 18 || hour < 6
+      const savedTheme = localStorage.getItem("theme")
+      
+      // If the user hasn't explicitly set a theme, or it's system, we enforce the sunset rule
+      if (!savedTheme || savedTheme === "system") {
+        setTheme(isNight ? "dark" : "light")
+      }
+    }
+    
+    // Check initially and then every 10 minutes
+    checkSunset()
+    const interval = setInterval(checkSunset, 10 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [setTheme])
 
   if (!mounted) {
-    return <div className="w-10 h-10" /> // Placeholder to prevent layout shift
+    return <div className="w-16 h-8" /> // Placeholder to prevent layout shift
   }
 
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
@@ -22,11 +40,31 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="relative flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all duration-300 group"
+      className={cn(
+        "relative inline-flex h-8 w-16 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-[#0F1117] shadow-inner",
+        isDark ? "bg-[#1A1D27] border border-[#2E3341]" : "bg-slate-200 border border-slate-300"
+      )}
       aria-label="Toggle theme"
     >
-      <Sun className="h-5 w-5 text-amber-500 absolute transition-all duration-300 scale-100 rotate-0 dark:scale-0 dark:-rotate-90 group-hover:text-amber-600" />
-      <Moon className="h-5 w-5 text-blue-400 absolute transition-all duration-300 scale-0 rotate-90 dark:scale-100 dark:rotate-0 group-hover:text-blue-300" />
+      <span className="sr-only">Toggle theme</span>
+      
+      {/* Sun icon for light side */}
+      <span className="absolute left-1.5 flex h-4 w-4 items-center justify-center text-amber-500">
+        <Sun className="h-3.5 w-3.5" />
+      </span>
+      
+      {/* Moon icon for dark side */}
+      <span className="absolute right-1.5 flex h-4 w-4 items-center justify-center text-blue-400">
+        <Moon className="h-3.5 w-3.5" />
+      </span>
+      
+      {/* Sliding circle */}
+      <span
+        className={cn(
+          "inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-300 z-10 flex items-center justify-center",
+          isDark ? "translate-x-9" : "translate-x-1"
+        )}
+      />
     </button>
   )
 }
