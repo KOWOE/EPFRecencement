@@ -226,10 +226,228 @@ const faqs = [
   }
 ]
 
-export default function RootPage() {
+export const playInteractiveNote = (type: "vocal" | "brass" | "synth" | "stat" | "pop") => {
+  if (typeof window === "undefined") return
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+    if (!AudioContextClass) return
+    const ctx = new AudioContextClass()
+    const now = ctx.currentTime
+
+    if (type === "vocal") {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = "sine"
+      osc.frequency.setValueAtTime(523.25, now) // C5
+      gain.gain.setValueAtTime(0.06, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start(now)
+      osc.stop(now + 0.65)
+    } else if (type === "brass") {
+      const osc1 = ctx.createOscillator()
+      const osc2 = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc1.type = "triangle"
+      osc1.frequency.setValueAtTime(311.13, now) // Eb4
+      osc2.type = "triangle"
+      osc2.frequency.setValueAtTime(466.16, now) // Bb4
+      gain.gain.setValueAtTime(0.04, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
+      osc1.connect(gain)
+      osc2.connect(gain)
+      gain.connect(ctx.destination)
+      osc1.start(now)
+      osc2.start(now)
+      osc1.stop(now + 0.55)
+      osc2.stop(now + 0.55)
+    } else if (type === "synth") {
+      const frequencies = [523.25, 659.25, 783.99, 1046.50]
+      frequencies.forEach((freq, idx) => {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.type = "sine"
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08)
+        gain.gain.setValueAtTime(0.04, now + idx * 0.08)
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.4)
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.start(now + idx * 0.08)
+        osc.stop(now + idx * 0.08 + 0.45)
+      })
+    } else if (type === "stat") {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = "sine"
+      osc.frequency.setValueAtTime(392.00, now)
+      osc.frequency.setValueAtTime(784.00, now + 0.06)
+      gain.gain.setValueAtTime(0.05, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start(now)
+      osc.stop(now + 0.3)
+    } else if (type === "pop") {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = "sine"
+      osc.frequency.setValueAtTime(880.00, now)
+      osc.frequency.exponentialRampToValueAtTime(1760.00, now + 0.05)
+      gain.gain.setValueAtTime(0.04, now)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start(now)
+      osc.stop(now + 0.1)
+    }
+  } catch (e) {}
+}
+
+function FaqSection() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  
+  const toggleFaq = (index: number) => {
+    setOpenFaq(openFaq === index ? null : index)
+    playInteractiveNote("pop")
+  }
+
+  return (
+    <section className="relative z-10 py-16 max-w-4xl mx-auto px-6 mb-20 reveal">
+      <div className="text-center mb-12 space-y-3">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-full text-slate-600 text-xs font-bold uppercase tracking-wider">
+          <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
+          <span>Foire Aux Questions</span>
+        </div>
+        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          Des questions ? Nous y répondons.
+        </h2>
+        <p className="text-slate-500 text-sm">
+          Tout ce que vous devez savoir pour compléter votre fiche sereinement.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {faqs.map((faq, index) => {
+          const isOpen = openFaq === index
+          return (
+            <div 
+              key={index}
+              className={cn(
+                "bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 reveal",
+                index === 0 ? "reveal-stagger-1" : index === 1 ? "reveal-stagger-2" : index === 2 ? "reveal-stagger-3" : "reveal-stagger-4"
+              )}
+            >
+              <button
+                onClick={() => toggleFaq(index)}
+                className="w-full px-6 py-5 text-left flex justify-between items-center gap-4 font-bold text-slate-800 hover:text-blue-600 hover:bg-slate-50/50 transition-colors"
+              >
+                <span className="text-base sm:text-lg">{faq.question}</span>
+                {isOpen ? (
+                  <ChevronUp className="w-5 h-5 text-slate-400 shrink-0" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
+                )}
+              </button>
+              {isOpen && (
+                <div className="px-6 pb-6 pt-1 text-sm text-slate-500 leading-relaxed border-t border-slate-50 animate-fade-in">
+                  {faq.answer}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+function MiniSynthWidget() {
   const [isSynthExpanded, setIsSynthExpanded] = useState(false)
 
+  return (
+    <div className="fixed bottom-6 left-6 z-[999] pointer-events-auto">
+      {!isSynthExpanded ? (
+        <button
+          onClick={() => {
+            setIsSynthExpanded(true)
+            playInteractiveNote("synth")
+          }}
+          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-blue-600/30 transition-all hover:scale-110 active:scale-95 group relative overflow-hidden"
+          title="Activer le Mini-Synthé 🎹"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Sparkles className="w-5 h-5 relative z-10 animate-pulse" />
+        </button>
+      ) : (
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl p-5 shadow-2xl w-72 space-y-4 animate-in slide-in-from-bottom-5 duration-300">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-slate-800">
+              <Mic className="w-4 h-4 text-blue-600 animate-bounce" />
+              <span className="font-bold text-xs uppercase tracking-wider">Mini Synthé EPF</span>
+            </div>
+            <button 
+              onClick={() => {
+                setIsSynthExpanded(false)
+                playInteractiveNote("pop")
+              }}
+              className="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          
+          <p className="text-[10px] text-slate-400 leading-normal">
+            Cliquez sur les touches pour composer une louange ! 🎵
+          </p>
+
+          <div className="grid grid-cols-5 gap-1.5 pt-2">
+            {[
+              { note: "Do", freq: 523.25, color: "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" },
+              { note: "Ré", freq: 587.33, color: "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" },
+              { note: "Mi", freq: 659.25, color: "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" },
+              { note: "Sol", freq: 783.99, color: "bg-blue-500 hover:bg-blue-600 shadow-blue-500/20" },
+              { note: "La", freq: 880.00, color: "bg-violet-500 hover:bg-violet-600 shadow-violet-500/20" },
+            ].map((key, i) => (
+              <button
+                key={i}
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    try {
+                      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+                      if (AudioContextClass) {
+                        const ctx = new AudioContextClass()
+                        const now = ctx.currentTime
+                        const osc = ctx.createOscillator()
+                        const gain = ctx.createGain()
+                        osc.type = "sine"
+                        osc.frequency.setValueAtTime(key.freq, now)
+                        gain.gain.setValueAtTime(0.08, now)
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
+                        osc.connect(gain)
+                        gain.connect(ctx.destination)
+                        osc.start(now)
+                        osc.stop(now + 0.5)
+                      }
+                    } catch(e) {}
+                  }
+                }}
+                className={cn(
+                  "h-16 rounded-xl flex flex-col justify-end pb-2 items-center text-white text-[10px] font-bold shadow-md active:scale-95 transition-all hover:-translate-y-0.5 cursor-pointer",
+                  key.color
+                )}
+              >
+                {key.note}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function RootPage() {
   useEffect(() => {
     if (typeof window === "undefined") return
     const observer = new IntersectionObserver(
@@ -237,6 +455,8 @@ export default function RootPage() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("reveal-active")
+          } else {
+            entry.target.classList.remove("reveal-active")
           }
         })
       },
@@ -253,89 +473,6 @@ export default function RootPage() {
       elements.forEach((el) => observer.unobserve(el))
     }
   }, [])
-
-  const playInteractiveNote = (type: "vocal" | "brass" | "synth" | "stat" | "pop") => {
-    if (typeof window === "undefined") return
-    try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-      if (!AudioContextClass) return
-      const ctx = new AudioContextClass()
-      const now = ctx.currentTime
-
-      if (type === "vocal") {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.type = "sine"
-        osc.frequency.setValueAtTime(523.25, now) // C5
-        gain.gain.setValueAtTime(0.06, now)
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.start(now)
-        osc.stop(now + 0.65)
-      } else if (type === "brass") {
-        const osc1 = ctx.createOscillator()
-        const osc2 = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc1.type = "triangle"
-        osc1.frequency.setValueAtTime(311.13, now) // Eb4
-        osc2.type = "triangle"
-        osc2.frequency.setValueAtTime(466.16, now) // Bb4
-        gain.gain.setValueAtTime(0.04, now)
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
-        osc1.connect(gain)
-        osc2.connect(gain)
-        gain.connect(ctx.destination)
-        osc1.start(now)
-        osc2.start(now)
-        osc1.stop(now + 0.55)
-        osc2.stop(now + 0.55)
-      } else if (type === "synth") {
-        const frequencies = [523.25, 659.25, 783.99, 1046.50]
-        frequencies.forEach((freq, idx) => {
-          const osc = ctx.createOscillator()
-          const gain = ctx.createGain()
-          osc.type = "sine"
-          osc.frequency.setValueAtTime(freq, now + idx * 0.08)
-          gain.gain.setValueAtTime(0.04, now + idx * 0.08)
-          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.4)
-          osc.connect(gain)
-          gain.connect(ctx.destination)
-          osc.start(now + idx * 0.08)
-          osc.stop(now + idx * 0.08 + 0.45)
-        })
-      } else if (type === "stat") {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.type = "sine"
-        osc.frequency.setValueAtTime(392.00, now)
-        osc.frequency.setValueAtTime(784.00, now + 0.06)
-        gain.gain.setValueAtTime(0.05, now)
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25)
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.start(now)
-        osc.stop(now + 0.3)
-      } else if (type === "pop") {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.type = "sine"
-        osc.frequency.setValueAtTime(880.00, now)
-        osc.frequency.exponentialRampToValueAtTime(1760.00, now + 0.05)
-        gain.gain.setValueAtTime(0.04, now)
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.start(now)
-        osc.stop(now + 0.1)
-      }
-    } catch (e) {}
-  }
-
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index)
-    playInteractiveNote("pop")
-  }
 
   return (
     <div className="relative min-h-screen bg-slate-50/50 overflow-clip font-sans">
@@ -589,53 +726,7 @@ export default function RootPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="relative z-10 py-16 max-w-4xl mx-auto px-6 mb-20 reveal">
-        <div className="text-center mb-12 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-full text-slate-600 text-xs font-bold uppercase tracking-wider">
-            <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
-            <span>Foire Aux Questions</span>
-          </div>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Des questions ? Nous y répondons.
-          </h2>
-          <p className="text-slate-500 text-sm">
-            Tout ce que vous devez savoir pour compléter votre fiche sereinement.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          {faqs.map((faq, index) => {
-            const isOpen = openFaq === index
-            return (
-              <div 
-                key={index}
-                className={cn(
-                  "bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 reveal",
-                  index === 0 ? "reveal-stagger-1" : index === 1 ? "reveal-stagger-2" : index === 2 ? "reveal-stagger-3" : "reveal-stagger-4"
-                )}
-              >
-                <button
-                  onClick={() => toggleFaq(index)}
-                  className="w-full px-6 py-5 text-left flex justify-between items-center gap-4 font-bold text-slate-800 hover:text-blue-600 hover:bg-slate-50/50 transition-colors"
-                >
-                  <span className="text-base sm:text-lg">{faq.question}</span>
-                  {isOpen ? (
-                    <ChevronUp className="w-5 h-5 text-slate-400 shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
-                  )}
-                </button>
-                {isOpen && (
-                  <div className="px-6 pb-6 pt-1 text-sm text-slate-500 leading-relaxed border-t border-slate-50 animate-fade-in">
-                    {faq.answer}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </section>
+      <FaqSection />
 
       {/* Final Call to Action */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 mb-24 reveal-zoom">
@@ -706,85 +797,7 @@ export default function RootPage() {
         </div>
       </footer>
 
-      {/* Floating Mini-Synth Widget (Surprise Easter Egg) */}
-      <div className="fixed bottom-6 left-6 z-[999] pointer-events-auto">
-        {!isSynthExpanded ? (
-          <button
-            onClick={() => {
-              setIsSynthExpanded(true)
-              playInteractiveNote("synth")
-            }}
-            className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-blue-600/30 transition-all hover:scale-110 active:scale-95 group relative overflow-hidden"
-            title="Activer le Mini-Synthé 🎹"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Sparkles className="w-5 h-5 relative z-10 animate-pulse" />
-          </button>
-        ) : (
-          <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl p-5 shadow-2xl w-72 space-y-4 animate-in slide-in-from-bottom-5 duration-300">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-slate-800">
-                <Mic className="w-4 h-4 text-blue-600 animate-bounce" />
-                <span className="font-bold text-xs uppercase tracking-wider">Mini Synthé EPF</span>
-              </div>
-              <button 
-                onClick={() => {
-                  setIsSynthExpanded(false)
-                  playInteractiveNote("pop")
-                }}
-                className="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-colors"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            
-            <p className="text-[10px] text-slate-400 leading-normal">
-              Cliquez sur les touches pour composer une louange ! 🎵
-            </p>
-
-            <div className="grid grid-cols-5 gap-1.5 pt-2">
-              {[
-                { note: "Do", freq: 523.25, color: "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" },
-                { note: "Ré", freq: 587.33, color: "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" },
-                { note: "Mi", freq: 659.25, color: "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" },
-                { note: "Sol", freq: 783.99, color: "bg-blue-500 hover:bg-blue-600 shadow-blue-500/20" },
-                { note: "La", freq: 880.00, color: "bg-violet-500 hover:bg-violet-600 shadow-violet-500/20" },
-              ].map((key, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      try {
-                        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-                        if (AudioContextClass) {
-                          const ctx = new AudioContextClass()
-                          const now = ctx.currentTime
-                          const osc = ctx.createOscillator()
-                          const gain = ctx.createGain()
-                          osc.type = "sine"
-                          osc.frequency.setValueAtTime(key.freq, now)
-                          gain.gain.setValueAtTime(0.08, now)
-                          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
-                          osc.connect(gain)
-                          gain.connect(ctx.destination)
-                          osc.start(now)
-                          osc.stop(now + 0.5)
-                        }
-                      } catch(e) {}
-                    }
-                  }}
-                  className={cn(
-                    "h-16 rounded-xl flex flex-col justify-end pb-2 items-center text-white text-[10px] font-bold shadow-md active:scale-95 transition-all hover:-translate-y-0.5 cursor-pointer",
-                    key.color
-                  )}
-                >
-                  {key.note}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      <MiniSynthWidget />
 
     </div>
   )
