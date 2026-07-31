@@ -183,31 +183,7 @@ const steps = [
     color: "bg-indigo-50 text-indigo-600"
   }
 ]
-
-const testimonials = [
-  {
-    name: "Pasteur Emmanuel Konan",
-    role: "Président National de la Musique EPF",
-    content: "Ce recensement national est une étape historique. Grâce à cette plateforme, nous pouvons enfin identifier les talents et coordonner nos louanges sur toute l'étendue du territoire.",
-    rating: 5,
-    avatarText: "EK"
-  },
-  {
-    name: "Sœur Grace Amenan",
-    role: "Choriste, Cathédrale de la Foi",
-    content: "L'inscription a été extrêmement simple. J'ai pu renseigner mon pupitre et mon expérience en moins de 3 minutes. Le design est magnifique, fluide et très agréable à utiliser.",
-    rating: 5,
-    avatarText: "GA"
-  },
-  {
-    name: "Frère Marc Kouassi",
-    role: "Chef de Fanfare Régional, Bouaké",
-    content: "Un outil indispensable pour structurer notre fanfare. Il nous permet de savoir exactement qui joue de quel instrument et de planifier efficacement nos formations régionales.",
-    rating: 5,
-    avatarText: "MK"
-  }
-]
-
+// Testimonials array removed
 const faqs = [
   {
     question: "Pourquoi ce recensement est-il obligatoire ?",
@@ -592,62 +568,7 @@ export default function RootPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="relative z-10 py-20 bg-slate-900 text-white rounded-[2.5rem] mx-4 md:mx-8 mb-20 overflow-hidden shadow-2xl reveal">
-        <div className="absolute inset-0 bg-grid-line opacity-[0.1] pointer-events-none" />
-        <div className="absolute -left-32 -bottom-32 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute -right-32 -top-32 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="container mx-auto px-6 relative z-10">
-          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-            <span className="px-3.5 py-1.5 bg-blue-500/20 text-blue-400 rounded-full text-xs font-bold uppercase tracking-wider">
-              Témoignages & Commentaires
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Ce que disent nos responsables
-            </h2>
-            <p className="text-slate-400 text-sm">
-              L'impact de la plateforme sur la coordination nationale de nos cultes et célébrations.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((item, idx) => (
-              <div 
-                key={idx}
-                onClick={() => playInteractiveNote("synth")}
-                className={cn(
-                  "bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-3xl flex flex-col justify-between hover:bg-white/[0.08] transition-all duration-300 cursor-pointer reveal-right",
-                  idx === 0 ? "reveal-stagger-1" : idx === 1 ? "reveal-stagger-2" : "reveal-stagger-3"
-                )}
-              >
-                <div className="space-y-6">
-                  {/* Rating Stars */}
-                  <div className="flex gap-1">
-                    {[...Array(item.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-slate-300 text-sm leading-relaxed italic">
-                    "{item.content}"
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4 mt-8 pt-6 border-t border-white/5">
-                  <div className="w-11 h-11 rounded-full bg-blue-600 flex items-center justify-center font-bold text-sm text-white shrink-0 shadow-inner">
-                    {item.avatarText}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-white">{item.name}</h4>
-                    <p className="text-slate-400 text-[11px] font-medium tracking-wide uppercase mt-0.5">{item.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+      {/* Testimonials Section removed */}
       <FaqSection />
 
       {/* Final Call to Action */}
