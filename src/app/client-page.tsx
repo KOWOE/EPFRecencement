@@ -363,90 +363,7 @@ function FaqSection() {
   )
 }
 
-function MiniSynthWidget() {
-  const [isSynthExpanded, setIsSynthExpanded] = useState(false)
-
-  return (
-    <div className="fixed bottom-6 left-6 z-[999] pointer-events-auto">
-      {!isSynthExpanded ? (
-        <button
-          onClick={() => {
-            setIsSynthExpanded(true)
-            playInteractiveNote("synth")
-          }}
-          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-blue-600/30 transition-all hover:scale-110 active:scale-95 group relative overflow-hidden"
-          title="Activer le Mini-Synthé 🎹"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <Sparkles className="w-5 h-5 relative z-10 animate-pulse" />
-        </button>
-      ) : (
-        <div className="bg-white/90 dark:bg-[#1A1D27]/90 backdrop-blur-xl border border-slate-200 dark:border-[#2E3341] rounded-3xl p-5 shadow-2xl w-72 space-y-4 animate-in slide-in-from-bottom-5 duration-300">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-slate-800 dark:text-[#F1F3F5]">
-              <Mic className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-bounce" />
-              <span className="font-bold text-xs uppercase tracking-wider">Mini Synthé EPF</span>
-            </div>
-            <button 
-              onClick={() => {
-                setIsSynthExpanded(false)
-                playInteractiveNote("pop")
-              }}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded-full transition-colors"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          
-          <p className="text-[10px] text-slate-400 dark:text-[#8B95A5] leading-normal">
-            Cliquez sur les touches pour composer une louange ! 🎵
-          </p>
-
-          <div className="grid grid-cols-5 gap-1.5 pt-2">
-            {[
-              { note: "Do", freq: 523.25, color: "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" },
-              { note: "Ré", freq: 587.33, color: "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" },
-              { note: "Mi", freq: 659.25, color: "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" },
-              { note: "Sol", freq: 783.99, color: "bg-blue-500 hover:bg-blue-600 shadow-blue-500/20" },
-              { note: "La", freq: 880.00, color: "bg-violet-500 hover:bg-violet-600 shadow-violet-500/20" },
-            ].map((key, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  if (typeof window !== "undefined") {
-                    try {
-                      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-                      if (AudioContextClass) {
-                        const ctx = new AudioContextClass()
-                        const now = ctx.currentTime
-                        const osc = ctx.createOscillator()
-                        const gain = ctx.createGain()
-                        osc.type = "sine"
-                        osc.frequency.setValueAtTime(key.freq, now)
-                        gain.gain.setValueAtTime(0.08, now)
-                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5)
-                        osc.connect(gain)
-                        gain.connect(ctx.destination)
-                        osc.start(now)
-                        osc.stop(now + 0.5)
-                      }
-                    } catch(e) {}
-                  }
-                }}
-                className={cn(
-                  "h-16 rounded-xl flex flex-col justify-end pb-2 items-center text-white text-[10px] font-bold shadow-md active:scale-95 transition-all hover:-translate-y-0.5 cursor-pointer",
-                  key.color
-                )}
-              >
-                {key.note}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+// MiniSynthWidget removed
 
 export default function RootPage() {
   useEffect(() => {
@@ -501,7 +418,6 @@ export default function RootPage() {
               EPF <span className="text-blue-600 dark:text-blue-500">Recensement</span>
             </span>
           </div>
-          <ThemeToggle />
         </div>
       </nav>
 
@@ -803,7 +719,10 @@ export default function RootPage() {
         </div>
       </footer>
 
-      <MiniSynthWidget />
+      {/* Floating Theme Toggle (Bottom Left) */}
+      <div className="fixed bottom-6 left-6 z-[999] pointer-events-auto">
+        <ThemeToggle />
+      </div>
 
     </div>
   )
