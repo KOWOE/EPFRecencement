@@ -19,6 +19,8 @@ export const metadata: Metadata = {
 
 import { ToastProvider } from "@/context/toast-context";
 import { MouseFollower } from "@/components/ui/mouse-follower";
+import { ThemeProvider } from "@/components/theme-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,13 +29,21 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-screen flex flex-col relative">
-        <MouseFollower />
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+      <body className="min-h-screen flex flex-col relative dark:bg-[#0F1117] dark:text-[#F1F3F5] bg-slate-50/50 text-slate-900 transition-colors duration-300">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          <MouseFollower />
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

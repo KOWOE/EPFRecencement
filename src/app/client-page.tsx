@@ -24,6 +24,7 @@ import {
   Drum
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 
 function TrumpetIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -315,14 +316,14 @@ function FaqSection() {
   return (
     <section className="relative z-10 py-16 max-w-4xl mx-auto px-6 mb-20 reveal">
       <div className="text-center mb-12 space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 rounded-full text-slate-600 text-xs font-bold uppercase tracking-wider">
-          <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider">
+          <HelpCircle className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
           <span>Foire Aux Questions</span>
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+        <h2 className="text-3xl font-extrabold text-slate-900 dark:text-[#F1F3F5] tracking-tight">
           Des questions ? Nous y répondons.
         </h2>
-        <p className="text-slate-500 text-sm">
+        <p className="text-slate-500 dark:text-[#8B95A5] text-sm">
           Tout ce que vous devez savoir pour compléter votre fiche sereinement.
         </p>
       </div>
@@ -334,23 +335,23 @@ function FaqSection() {
             <div 
               key={index}
               className={cn(
-                "bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 reveal",
+                "bg-white dark:bg-[#1A1D27] rounded-2xl border border-slate-100 dark:border-[#2E3341] shadow-sm overflow-hidden transition-all duration-300 reveal",
                 index === 0 ? "reveal-stagger-1" : index === 1 ? "reveal-stagger-2" : index === 2 ? "reveal-stagger-3" : "reveal-stagger-4"
               )}
             >
               <button
                 onClick={() => toggleFaq(index)}
-                className="w-full px-6 py-5 text-left flex justify-between items-center gap-4 font-bold text-slate-800 hover:text-blue-600 hover:bg-slate-50/50 transition-colors"
+                className="w-full px-6 py-5 text-left flex justify-between items-center gap-4 font-bold text-slate-800 dark:text-[#F1F3F5] hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
               >
                 <span className="text-base sm:text-lg">{faq.question}</span>
                 {isOpen ? (
-                  <ChevronUp className="w-5 h-5 text-slate-400 shrink-0" />
+                  <ChevronUp className="w-5 h-5 text-slate-400 dark:text-slate-500 shrink-0" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
+                  <ChevronDown className="w-5 h-5 text-slate-400 dark:text-slate-500 shrink-0" />
                 )}
               </button>
               {isOpen && (
-                <div className="px-6 pb-6 pt-1 text-sm text-slate-500 leading-relaxed border-t border-slate-50 animate-fade-in">
+                <div className="px-6 pb-6 pt-1 text-sm text-slate-500 dark:text-[#8B95A5] leading-relaxed border-t border-slate-50 dark:border-slate-800/50 animate-fade-in">
                   {faq.answer}
                 </div>
               )}
@@ -380,10 +381,10 @@ function MiniSynthWidget() {
           <Sparkles className="w-5 h-5 relative z-10 animate-pulse" />
         </button>
       ) : (
-        <div className="bg-white/90 backdrop-blur-xl border border-slate-200 rounded-3xl p-5 shadow-2xl w-72 space-y-4 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="bg-white/90 dark:bg-[#1A1D27]/90 backdrop-blur-xl border border-slate-200 dark:border-[#2E3341] rounded-3xl p-5 shadow-2xl w-72 space-y-4 animate-in slide-in-from-bottom-5 duration-300">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-slate-800">
-              <Mic className="w-4 h-4 text-blue-600 animate-bounce" />
+            <div className="flex items-center gap-1.5 text-slate-800 dark:text-[#F1F3F5]">
+              <Mic className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-bounce" />
               <span className="font-bold text-xs uppercase tracking-wider">Mini Synthé EPF</span>
             </div>
             <button 
@@ -391,13 +392,13 @@ function MiniSynthWidget() {
                 setIsSynthExpanded(false)
                 playInteractiveNote("pop")
               }}
-              className="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-full transition-colors"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded-full transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
           
-          <p className="text-[10px] text-slate-400 leading-normal">
+          <p className="text-[10px] text-slate-400 dark:text-[#8B95A5] leading-normal">
             Cliquez sur les touches pour composer une louange ! 🎵
           </p>
 
@@ -456,7 +457,11 @@ export default function RootPage() {
           if (entry.isIntersecting) {
             entry.target.classList.add("reveal-active")
           } else {
-            entry.target.classList.remove("reveal-active")
+            // Only remove the class if the element is pushed down (below the viewport)
+            // This prevents the infinite loop when elements leave from the top with CSS transforms
+            if (entry.boundingClientRect.top > 0) {
+              entry.target.classList.remove("reveal-active")
+            }
           }
         })
       },
@@ -486,16 +491,17 @@ export default function RootPage() {
       <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none z-0" />
 
       {/* Header/Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100 transition-all duration-300">
+      <nav className="sticky top-0 z-50 bg-white/70 dark:bg-[#0F1117]/80 backdrop-blur-xl border-b border-slate-100 dark:border-[#2E3341] transition-all duration-300">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2 group cursor-pointer">
-            <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 bg-white flex items-center justify-center shadow-lg shadow-blue-600/10 group-hover:scale-105 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 dark:border-[#2E3341] bg-white dark:bg-[#1A1D27] flex items-center justify-center shadow-lg shadow-blue-600/10 group-hover:scale-105 transition-transform duration-300">
               <img src="/logo.jpg" alt="Logo EPF" className="w-full h-full object-cover" />
             </div>
-            <span className="text-xl font-bold text-slate-900 tracking-tight">
-              EPF <span className="text-blue-600">Recensement</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-[#F1F3F5] tracking-tight">
+              EPF <span className="text-blue-600 dark:text-blue-500">Recensement</span>
             </span>
           </div>
+          <ThemeToggle />
         </div>
       </nav>
 
@@ -520,27 +526,27 @@ export default function RootPage() {
         <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in-up">
           <div 
             onClick={() => playInteractiveNote("synth")}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50/80 border border-blue-100/50 rounded-full text-blue-700 text-xs font-bold tracking-wider uppercase cursor-pointer hover:bg-blue-100/50 active:scale-95 transition-all animate-pulse"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50/80 dark:bg-blue-900/20 border border-blue-100/50 dark:border-blue-800/30 rounded-full text-blue-700 dark:text-blue-400 text-xs font-bold tracking-wider uppercase cursor-pointer hover:bg-blue-100/50 dark:hover:bg-blue-900/40 active:scale-95 transition-all animate-pulse"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Recensement National Officiel 2026</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tight">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-[#F1F3F5] leading-[1.1] tracking-tight">
             Bâtissons ensemble <br />
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 dark:from-blue-400 dark:via-indigo-400 dark:to-blue-500 bg-clip-text text-transparent">
               l'avenir de nos ministères.
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-slate-500 dark:text-[#8B95A5] max-w-2xl mx-auto leading-relaxed">
             La plateforme officielle pour l'identification, la structuration et la valorisation des choristes, fanfaristes et musiciens des Églises de Pentecôte de la Foi.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Link
               href="/recensement"
-              className="px-8 py-4.5 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all hover:shadow-xl hover:shadow-blue-600/25 hover:-translate-y-0.5 flex items-center justify-center gap-3 group"
+              className="px-8 py-4.5 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all hover:shadow-xl hover:shadow-blue-600/25 dark:hover:shadow-blue-900/40 hover:-translate-y-0.5 flex items-center justify-center gap-3 group"
             >
               <span>Démarrer mon recensement</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
@@ -555,18 +561,18 @@ export default function RootPage() {
               key={idx}
               onClick={() => playInteractiveNote("stat")}
               className={cn(
-                "p-6 bg-white/70 backdrop-blur-md rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 flex items-center gap-4 group cursor-pointer reveal-zoom",
+                "p-6 bg-white/70 dark:bg-[#1A1D27]/70 backdrop-blur-md rounded-2xl border border-slate-100 dark:border-[#2E3341] shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700 transition-all duration-300 flex items-center gap-4 group cursor-pointer reveal-zoom",
                 idx === 0 ? "reveal-stagger-1" : idx === 1 ? "reveal-stagger-2" : "reveal-stagger-3"
               )}
             >
-              <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300", stat.color)}>
+              <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300", stat.color, "dark:bg-opacity-10")}>
                 <stat.icon className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-2xl font-black text-slate-900 tracking-tight">
+                <p className="text-2xl font-black text-slate-900 dark:text-[#F1F3F5] tracking-tight">
                   <AnimatedCounter value={stat.value} />
                 </p>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">{stat.label}</p>
+                <p className="text-xs font-bold text-slate-400 dark:text-[#8B95A5] uppercase tracking-wider mt-0.5">{stat.label}</p>
               </div>
             </div>
           ))}
@@ -628,40 +634,40 @@ export default function RootPage() {
       <section className="relative z-10 py-20 md:py-24">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16 space-y-3 reveal">
-            <span className="px-3.5 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold uppercase tracking-wider">
+            <span className="px-3.5 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 rounded-full text-xs font-bold uppercase tracking-wider">
               Fonctionnement
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-[#F1F3F5] tracking-tight">
               Comment fonctionne le recensement ?
             </h2>
-            <p className="text-slate-500">
+            <p className="text-slate-500 dark:text-[#8B95A5]">
               Une démarche simplifiée en 3 étapes pour répertorier tous nos ministres de louange.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-5xl mx-auto relative">
             {/* Connecting lines for desktop */}
-            <div className="hidden lg:block absolute top-1/2 left-[15%] right-[15%] h-0.5 bg-slate-200 -translate-y-12 z-0" />
+            <div className="hidden lg:block absolute top-1/2 left-[15%] right-[15%] h-0.5 bg-slate-200 dark:bg-slate-800 -translate-y-12 z-0" />
 
             {steps.map((item, idx) => (
               <div 
                 key={idx}
                 onClick={() => playInteractiveNote("pop")}
                 className={cn(
-                  "relative bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 z-10 group cursor-pointer reveal-left",
+                  "relative bg-white dark:bg-[#1A1D27] p-8 rounded-3xl border border-slate-100 dark:border-[#2E3341] shadow-sm hover:shadow-md transition-all duration-300 z-10 group cursor-pointer reveal-left",
                   idx === 0 ? "reveal-stagger-1" : idx === 1 ? "reveal-stagger-2" : "reveal-stagger-3"
                 )}
               >
                 <div className="flex justify-between items-start mb-6">
-                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300", item.color)}>
+                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300", item.color, "dark:bg-opacity-10")}>
                     <item.icon className="w-6 h-6" />
                   </div>
-                  <span className="text-4xl font-black text-slate-100 group-hover:text-slate-200 transition-colors">
+                  <span className="text-4xl font-black text-slate-100 dark:text-slate-800 group-hover:text-slate-200 dark:group-hover:text-slate-700 transition-colors">
                     {item.step}
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-[#F1F3F5] mb-2">{item.title}</h3>
+                <p className="text-sm text-slate-500 dark:text-[#8B95A5] leading-relaxed">
                   {item.description}
                 </p>
               </div>
